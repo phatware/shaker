@@ -1,0 +1,140 @@
+//
+//  ContentView.swift
+//  shaker
+//
+//  Created by Stan Miasnikov on 11/19/22.
+//
+
+import SwiftUI
+import MapKit
+import CoreLocation
+
+enum SearchScope: String, CaseIterable {
+    case alcoholic, alcoholfree
+}
+
+struct CoctailRow: View {
+    
+    var rec_id: Int64
+    let database: CoctailsDatabase
+
+    var name : String {
+        return database.getRecipeName(rec_id, alcohol: true)?["name"] as? String ?? ""
+    }
+    
+    var body: some View {
+        NavigationLink(destination: Text(name)) {
+            Text(name)
+        }
+    }
+}
+
+
+struct CoctailsView: View {
+
+    @State private var searchText = ""
+    
+    var database : CoctailsDatabase {
+        var db = CoctailsDatabase()
+        _ = db.initializeDatabase()
+        return db
+    }
+    var alcoholic: [NSNumber] {
+        if searchText.isEmpty {
+            return database.getUnlockedRecordList(true, filter: nil, addName: false) as? [NSNumber] ?? []
+        }
+        else {
+            return database.getUnlockedRecordList(true, filter: searchText, addName: false) as? [NSNumber] ?? []
+        }
+    }
+    var non_alcoholic: [NSNumber] {
+        if searchText.isEmpty {
+            return database.getUnlockedRecordList(false, filter: nil, addName: false) as? [NSNumber] ?? []
+        }
+        else {
+            return database.getUnlockedRecordList(false, filter: searchText, addName: false) as? [NSNumber] ?? []
+        }
+    }
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(alcoholic, id: \.self) { rec_id in
+                    CoctailRow(rec_id: rec_id.int64Value, database: database)
+                }
+            }
+            .searchable(text: $searchText, placement: .navigationBarDrawer) {
+                ForEach(SearchScope.allCases, id: \.self) { scope in
+                    Text(scope.rawValue.capitalized)
+                }
+            }            // .navigationTitle("Coctails")
+        }
+    }
+}
+
+struct IngredientsView: View {
+    var body: some View {
+        Text("Ingredients")
+    }
+}
+
+struct PlayView: View {
+    var body: some View {
+        Text("Play!")
+    }
+}
+
+struct AccountView: View {
+    var body: some View {
+        Text("Account")
+    }
+}
+
+struct ContentView: View {
+    @Environment(\.scenePhase) var scenePhase
+    
+    var body: some View {
+        TabView {
+            CoctailsView()
+                .tabItem {
+                    Label("Coctails", systemImage: "wineglass")
+                    Text("Coctails")
+                }
+            IngredientsView()
+                .tabItem {
+                    Label("Ingredients", systemImage: "checklist")
+                    Text("Ingredients")
+                }
+            PlayView()
+                .tabItem {
+                    Label("Play!", systemImage: "gamecontroller")
+                    Text("Play!")
+                }
+            MapContentView()
+                .tabItem {
+                    Label("Map", systemImage: "map")
+                    Text("Map")
+                }
+            AccountView()
+                .tabItem {
+                    Label("Account", systemImage: "person")
+                    Text("Account")
+                }
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                LocationService.shared.requestLocation()
+            } else if newPhase == .inactive {
+                print("Inactive")
+            } else if newPhase == .background {
+                print("Background")
+            }
+        }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}

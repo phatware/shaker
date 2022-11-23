@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1077495031802-u3f3v943qfjll8375iugsugc1ouj3f8t.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1077495031802-u3f3v943qfjll8375iugsugc1ouj3f8t</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAgtdFjSHt_GBybcplaT6TIIhIdNa5mD3A</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1077495031802</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.phunkware.shaker</string>
+	<key>PROJECT_ID</key>
+	<string>shaker-9af6b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>shaker-9af6b.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1077495031802:ios:e65160c0e870309df16643</string>
+	<key>DATABASE_URL</key>
+	<string>https://shaker-9af6b.firebaseio.com</string>
+</dict>
+</plist>
