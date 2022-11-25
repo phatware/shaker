@@ -533,7 +533,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 
 // CREATE TABLE ingredients( record_id integer PRIMARY KEY NOT NULL, item text, used integer, options integer, enabled boolean, enabled_default boolean, category_id integer );
 
-- (NSArray *) inredientsForCategory:(sqlite3_int64)category_id showall:(BOOL)showall filter:(NSString *)filter sort:(NSString *)sort
+- (NSArray <NSDictionary *> *) inredientsForCategory:(sqlite3_int64)category_id showall:(BOOL)showall filter:(NSString *)filter sort:(NSString *)sort
 {
     sqlite3_int64 count = [self getItemCount:@"ingredients" filter:nil];
     NSMutableArray * array = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)count];
@@ -547,7 +547,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
     
     const char * sql = [[NSString stringWithFormat:@"SELECT item, used, enabled, enabled_default, record_id FROM ingredients WHERE category_id = %lld%@ ORDER BY %@",
                          category_id, fltr, (sort==nil) ? @"item ASC" : sort] UTF8String];
-    sqlite3_stmt *	statement = NULL;
+    sqlite3_stmt *    statement = NULL;
     if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
     {
         while ( sqlite3_step(statement) == SQLITE_ROW )
@@ -572,7 +572,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
     return (NSArray *)array;
 }
 
-- (NSArray *) inredientsCategories
+- (NSArray <NSDictionary *> *) inredientsCategories
 {
     sqlite3_int64 count = [self getItemCount:@"ingredient_types" filter:nil];
     if ( count < 1 )

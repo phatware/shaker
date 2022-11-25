@@ -30,6 +30,7 @@
 		F658BD96292DB5A700837D1F /* UserDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = F658BD92292DB5A700837D1F /* UserDatabase.m */; };
 		F658BD99292DB6B400837D1F /* NSFileManager+Folder.m in Sources */ = {isa = PBXBuildFile; fileRef = F658BD98292DB6B400837D1F /* NSFileManager+Folder.m */; };
 		F658BD9B292DB70D00837D1F /* WatchConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F658BD9A292DB70D00837D1F /* WatchConnect.swift */; };
+		F6BCC3FB2930AAFC008E20F4 /* IngredientsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +65,7 @@
 		F658BD97292DB6B400837D1F /* NSFileManager+Folder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager+Folder.h"; sourceTree = "<group>"; };
 		F658BD98292DB6B400837D1F /* NSFileManager+Folder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+Folder.m"; sourceTree = "<group>"; };
 		F658BD9A292DB70D00837D1F /* WatchConnect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatchConnect.swift; sourceTree = "<group>"; };
+		F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +104,7 @@
 				F658BD752929F67100837D1F /* Info.plist */,
 				F658BD532929C5B700837D1F /* shakerApp.swift */,
 				F658BD552929C5B700837D1F /* ContentView.swift */,
+				F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */,
 				F658BD572929C5B900837D1F /* Assets.xcassets */,
 				F658BD592929C5B900837D1F /* Preview Content */,
 				F658BD612929F31200837D1F /* MapContentView.swift */,
@@ -254,6 +257,7 @@
 				F658BD9B292DB70D00837D1F /* WatchConnect.swift in Sources */,
 				F658BD89292C92BD00837D1F /* CustomAnnotation.swift in Sources */,
 				F658BD802929FC5100837D1F /* MKPlacemark+Extension.swift in Sources */,
+				F6BCC3FB2930AAFC008E20F4 /* IngredientsView.swift in Sources */,
 				F658BD99292DB6B400837D1F /* NSFileManager+Folder.m in Sources */,
 				F658BD562929C5B700837D1F /* ContentView.swift in Sources */,
 				F658BD622929F31200837D1F /* MapContentView.swift in Sources */,

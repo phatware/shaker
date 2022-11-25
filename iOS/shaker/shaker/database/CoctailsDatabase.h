@@ -38,8 +38,8 @@ typedef enum
 - (nullable NSArray *) getFavorites:(BOOL)like all:(BOOL)all isAlcogol:(BOOL)alcohol;
 - (nullable NSDictionary *) getRecipeName:(sqlite3_int64)record_id alcohol:(BOOL)alcohol;
 
-- (nullable NSArray *) inredientsCategories;
-- (nullable NSArray *) inredientsForCategory:(sqlite3_int64)category_id showall:(BOOL)showall filter:(nullable NSString *)filter sort:(nullable NSString *)sort;
+- (nullable NSArray <NSDictionary *> *) inredientsCategories;
+- (nullable NSArray <NSDictionary *> *) inredientsForCategory:(sqlite3_int64)category_id showall:(BOOL)showall filter:(nullable NSString *)filter sort:(nullable NSString *)sort;
 - (BOOL) enableIngredient:(BOOL)enable withRecordid:(sqlite3_int64)recordid;
 - (BOOL) enableAllIngredients:(BOOL)enable;
 - (sqlite3_int64) countEnabledIngradients:(BOOL)enabled;

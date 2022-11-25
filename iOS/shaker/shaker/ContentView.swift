@@ -19,7 +19,7 @@ struct CoctailRow: View {
     let database: CoctailsDatabase
 
     var name : String {
-        return database.getRecipeName(rec_id, alcohol: true)?["name"] as? String ?? ""
+        return database.getRecipeName(rec_id, alcohol: true)?["name"] as? String ?? "(Unknown)"
     }
     
     var body: some View {
@@ -29,16 +29,12 @@ struct CoctailRow: View {
     }
 }
 
-
 struct CoctailsView: View {
+    
+    let database : CoctailsDatabase
 
     @State private var searchText = ""
     
-    var database : CoctailsDatabase {
-        var db = CoctailsDatabase()
-        _ = db.initializeDatabase()
-        return db
-    }
     var alcoholic: [NSNumber] {
         if searchText.isEmpty {
             return database.getUnlockedRecordList(true, filter: nil, addName: false) as? [NSNumber] ?? []
@@ -69,14 +65,10 @@ struct CoctailsView: View {
                 }
             }            // .navigationTitle("Coctails")
         }
+        .navigationTitle("Coctails")
     }
 }
 
-struct IngredientsView: View {
-    var body: some View {
-        Text("Ingredients")
-    }
-}
 
 struct PlayView: View {
     var body: some View {
@@ -93,14 +85,20 @@ struct AccountView: View {
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     
+    var database : CoctailsDatabase {
+        let db = CoctailsDatabase()
+        _ = db.initializeDatabase()
+        return db
+    }
+
     var body: some View {
         TabView {
-            CoctailsView()
+            CoctailsView(database: database)
                 .tabItem {
                     Label("Coctails", systemImage: "wineglass")
                     Text("Coctails")
                 }
-            IngredientsView()
+            CategoriesView(database: database)
                 .tabItem {
                     Label("Ingredients", systemImage: "checklist")
                     Text("Ingredients")
@@ -130,6 +128,7 @@ struct ContentView: View {
                 print("Background")
             }
         }
+        .navigationTitle("Shaker")
     }
 }
 
