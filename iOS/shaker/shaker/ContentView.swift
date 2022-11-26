@@ -18,13 +18,15 @@ struct CoctailRow: View {
     var rec_id: Int64
     let database: CoctailsDatabase
 
-    var name : String {
+    private var name : String {
         return database.getRecipeName(rec_id, alcohol: true)?["name"] as? String ?? "(Unknown)"
     }
     
     var body: some View {
         NavigationLink(destination: Text(name)) {
             Text(name)
+                .searchCompletion(name)
+                .foregroundColor(.black)
         }
     }
 }
@@ -34,41 +36,48 @@ struct CoctailsView: View {
     let database : CoctailsDatabase
 
     @State private var searchText = ""
+    @State private var column = "name"
     
-    var alcoholic: [NSNumber] {
+    private var filter: String {
+        return "\(column) LIKE '%\(searchText)%'"
+    }
+    
+    private var alcoholic: [NSNumber] {
         if searchText.isEmpty {
             return database.getUnlockedRecordList(true, filter: nil, addName: false) as? [NSNumber] ?? []
         }
         else {
-            return database.getUnlockedRecordList(true, filter: searchText, addName: false) as? [NSNumber] ?? []
+            return database.getUnlockedRecordList(true, filter: self.filter, addName: false) as? [NSNumber] ?? []
         }
     }
-    var non_alcoholic: [NSNumber] {
+    private var non_alcoholic: [NSNumber] {
         if searchText.isEmpty {
             return database.getUnlockedRecordList(false, filter: nil, addName: false) as? [NSNumber] ?? []
         }
         else {
-            return database.getUnlockedRecordList(false, filter: searchText, addName: false) as? [NSNumber] ?? []
+            return database.getUnlockedRecordList(false, filter: self.filter, addName: false) as? [NSNumber] ?? []
         }
     }
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach(alcoholic, id: \.self) { rec_id in
-                    CoctailRow(rec_id: rec_id.int64Value, database: database)
+            VStack {
+                List {
+                    ForEach(alcoholic, id: \.self) { rec_id in
+                        CoctailRow(rec_id: rec_id.int64Value, database: database)
+                    }
                 }
+                .searchable(text: $searchText, placement: .navigationBarDrawer) {
+                    //                ForEach(SearchScope.allCases, id: \.self) { scope in
+                    //                    Text(scope.rawValue.capitalized)
+                    //                }
+                }
+                // .listStyle(.inset)
             }
-            .searchable(text: $searchText, placement: .navigationBarDrawer) {
-                ForEach(SearchScope.allCases, id: \.self) { scope in
-                    Text(scope.rawValue.capitalized)
-                }
-            }            // .navigationTitle("Coctails")
+            .navigationTitle("Coctails")
         }
-        .navigationTitle("Coctails")
     }
 }
-
 
 struct PlayView: View {
     var body: some View {

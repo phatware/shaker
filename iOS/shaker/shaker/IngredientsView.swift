@@ -7,15 +7,63 @@
 
 import SwiftUI
 
+
+struct RecipeRow: View {
+    
+    var rec_id: Int64
+    let database: CoctailsDatabase
+    
+    private var name : String {
+        return database.getRecipeName(rec_id, alcohol: true)?["name"] as? String ?? "(Unknown)"
+    }
+    
+    var body: some View {
+        NavigationLink(destination: Text(name)) {
+            Text(name)
+        }
+    }
+}
+
+struct FilteredRecipesView: View {
+    
+    let database : CoctailsDatabase
+    let ingredient : String
+        
+    private var filter: String {
+        return "ingredients LIKE '%\(ingredient)%'"
+    }
+    
+    private var alcoholic: [NSNumber] {
+        return database.getUnlockedRecordList(true, filter: self.filter, addName: false) as? [NSNumber] ?? []
+    }
+    private var non_alcoholic: [NSNumber] {
+        return database.getUnlockedRecordList(false, filter: self.filter, addName: false) as? [NSNumber] ?? []
+    }
+    
+    var body: some View {
+        VStack {
+            List {
+                ForEach(alcoholic, id: \.self) { rec_id in
+                    RecipeRow(rec_id: rec_id.int64Value, database: database)
+                }
+            }
+            // .listStyle(.inset)
+        }
+        .navigationTitle(ingredient)
+    }
+}
+
+
+
 struct IngredientRow: View {
     
     var ing: NSDictionary
     let database: CoctailsDatabase
     
-    var name: String {
+    private var name: String {
         return ing["name"] as? String ?? ""
     }
-    var used: Int {
+    private var used: Int {
         return ing["used"] as? Int ?? 0
     }
 
@@ -31,17 +79,19 @@ struct IngredientRow: View {
             }
         } )
         
-        VStack(alignment: .leading) {
-            Toggle(isOn: entoggle){
-                Text(name)
-                    .font(.body)
+        NavigationLink(destination: FilteredRecipesView(database: database, ingredient: name)) {
+            VStack(alignment: .leading) {
+                Toggle(isOn: entoggle){
+                    Text(name)
+                        .font(.body)
+                }
+                .toggleStyle(.automatic)
+                // Spacer()
+                Text("Used in \(used) recipes")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .padding(.top, -6)
             }
-            .toggleStyle(.automatic)
-            // Spacer()
-            Text("Used in \(used) recipes")
-                .font(.footnote)
-                .foregroundColor(.gray)
-                .padding(.top, -6)
         }
         // .padding()
     }
@@ -55,7 +105,7 @@ struct IngredientsView: View {
     
     @State private var searchText = ""
     
-    var ingredients: [NSDictionary] {
+    private var ingredients: [NSDictionary] {
         if searchText.isEmpty {
             return database.inredients(forCategory: category_id, showall: true, filter: nil, sort: nil) as? [NSDictionary] ?? []
         }
@@ -72,10 +122,10 @@ struct IngredientsView: View {
             }
         }
         .searchable(text: $searchText, placement: .navigationBarDrawer) {
-            ForEach(SearchScope.allCases, id: \.self) { scope in
-                Text(scope.rawValue.capitalized)
-            }
-        }            // .navigationTitle("Coctails")
+//            ForEach(SearchScope.allCases, id: \.self) { scope in
+//                Text(scope.rawValue.capitalized)
+//            }
+        }
         .navigationTitle(category)
         .navigationBarItems(trailing: Button(action: {
             print("Edit button pressed...")
@@ -90,10 +140,10 @@ struct CategoryRow: View {
     var category: NSDictionary
     let database: CoctailsDatabase
     
-    var name: String {
+    private var name: String {
         return category["category"] as? String ?? ""
     }
-    var cid: Int64 {
+    private var cid: Int64 {
         return category["id"] as? Int64 ?? 0
     }
     
@@ -109,7 +159,7 @@ struct CategoriesView: View {
     
     let database : CoctailsDatabase
     
-    var categories: [NSDictionary] {
+    private var categories: [NSDictionary] {
         return database.inredientsCategories() as? [NSDictionary] ?? []
     }
     
@@ -123,12 +173,6 @@ struct CategoriesView: View {
                 }
             }
             .navigationTitle("Ingredients")
-            // .navigationTitle("Ingredients")
-            //            .searchable(text: $searchText, placement: .navigationBarDrawer) {
-            //                ForEach(SearchScope.allCases, id: \.self) { scope in
-            //                    Text(scope.rawValue.capitalized)
-            //                }
-            //            }            // .navigationTitle("Coctails")
         }
     }
 }

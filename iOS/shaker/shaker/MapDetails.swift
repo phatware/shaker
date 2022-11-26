@@ -12,8 +12,7 @@ struct MapDetails: View {
     
     var mapItem: MKMapItem?
     private let delta = 0.005
-    
-    let defCoord : CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+    private let defCoord : CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0)
     
     var body: some View {
         

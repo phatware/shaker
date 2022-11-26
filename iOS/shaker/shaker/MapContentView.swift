@@ -11,11 +11,11 @@ import MapKit
 
 struct MapContentView: View {
     
-    let type: MKMapType = .standard
-    @State var region: MKCoordinateRegion?
-    let trackingMode: MKUserTrackingMode = .none
-    @State var pushDetail = false
-    @State var selectedItam : MKMapItem?
+    private let type: MKMapType = .standard
+    private let trackingMode: MKUserTrackingMode = .none
+    @State private var region: MKCoordinateRegion?
+    @State private var pushDetail = false
+    @State private var selectedItam : MKMapItem?
     
     var body: some View {
         NavigationView {
