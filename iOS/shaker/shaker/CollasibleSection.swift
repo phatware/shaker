@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+///////////////////////////////////////////////////////////////////////////////////////////
+///Collapsible Section CONTENT view
+
 struct CollapsibleSection<Content: View>: View
 {
     private let title: String
@@ -15,7 +18,8 @@ struct CollapsibleSection<Content: View>: View
     private let spacing: CGFloat
     @State private var isExpanded = false
     
-    init(title: String, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 12, @ViewBuilder content: () -> Content) {
+    init(title: String, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 12, @ViewBuilder content: () -> Content)
+    {
         self.title = title
         self.alignment = alignment
         self.spacing = spacing
@@ -27,16 +31,16 @@ struct CollapsibleSection<Content: View>: View
         // TODO: fix colors
         Section(header: HStack {
             Text(title)
-                .font(.headline)
-                .foregroundColor(.white)
+                .font(.title2)
+                .foregroundColor(.black)
                 .padding()
             Spacer()
             Image(systemName: "chevron.up")
                 .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                .foregroundColor(.white)
+                .foregroundColor(.black)
                 .padding(.trailing, 10)
         }
-            .background(Color.blue)
+            .background(Color(white: 0.95))
             .listRowInsets(EdgeInsets(
                 top: 0,
                 leading: 0,
@@ -48,12 +52,10 @@ struct CollapsibleSection<Content: View>: View
         ) {
             // list items
             if isExpanded {
-                VStack(alignment: alignment, spacing: spacing) {
-                    content
-                }
-                //.animation(.easeOut, value: 0)
-                //.transition(.slide)
-                // .clipped()
+                content
+                    .animation(.easeOut, value: 0)
+                    .transition(.slide)
+                    // .clipped()
             }
         }
     }

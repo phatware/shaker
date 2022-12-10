@@ -65,7 +65,7 @@ struct MapSearchView: View {
         localSearch = MKLocalSearch(request: searchRequest)
         localSearch?.start { [self] (response, error) in
             guard error == nil else {
-                print("Error \(error?.localizedDescription ?? "")")
+                print("Search failed: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
             

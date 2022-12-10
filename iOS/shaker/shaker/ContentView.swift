@@ -15,6 +15,7 @@ enum SearchScope: String, CaseIterable
     case alcoholic, alcoholfree
 }
 
+
 struct CoctailRow: View
 {
     @EnvironmentObject var modelData: ShakerModel

@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Ingredient, Identifiable, Hashable
+///
 struct Ingredient: Identifiable, Hashable
 {
     let id = UUID()
@@ -16,6 +19,9 @@ struct Ingredient: Identifiable, Hashable
     var enabled: Bool
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Ingredient Category, Identifiable, Hashable
+
 struct IngredientCategory : Identifiable, Hashable
 {
     let id = UUID()
@@ -24,6 +30,9 @@ struct IngredientCategory : Identifiable, Hashable
     let rec_id: Int64
     var ingredients : [Ingredient] = []
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Recipe Row View
 
 struct RecipeRow: View {
     @EnvironmentObject var modelData: ShakerModel
@@ -40,7 +49,11 @@ struct RecipeRow: View {
     }
 }
 
-struct FilteredRecipesView: View {
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Filtered Recipes View
+
+struct FilteredRecipesView: View
+{
     @EnvironmentObject var modelData: ShakerModel
     let ingredient : String
     
@@ -83,8 +96,11 @@ struct FilteredRecipesView: View {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Ingredient Row view
 
-struct IngredientRow: View {
+struct IngredientRow: View
+{
     @EnvironmentObject var modelData: ShakerModel
     var ing: Ingredient
     
@@ -116,46 +132,12 @@ struct IngredientRow: View {
         .listRowSeparator(.visible)
     }
 }
-//
-//struct IngredientsView: View {
-//    @EnvironmentObject var modelData: ShakerModel
-//    let category_id: Int64
-//    let category: String
-//
-//    @State private var searchText = ""
-//
-//    private var ingredients: [NSDictionary] {
-//        if searchText.isEmpty {
-//            return modelData.database.inredients(forCategory: category_id, showall: true, filter: nil, sort: nil) as? [NSDictionary] ?? []
-//        }
-//        else {
-//            let filter = "item LIKE '%\(searchText)%'"
-//            return modelData.database.inredients(forCategory: category_id, showall: true, filter: filter, sort: nil) as? [NSDictionary] ?? []
-//        }
-//    }
-//
-//    var body: some View {
-//        List {
-//            ForEach(ingredients, id: \.self) { ing in
-//                IngredientRow(ing: ing)
-//            }
-//        }
-//        .searchable(text: $searchText, placement: .navigationBarDrawer) {
-////            ForEach(SearchScope.allCases, id: \.self) { scope in
-////                Text(scope.rawValue.capitalized)
-////            }
-//        }
-//        .navigationTitle(category)
-//        .navigationBarItems(trailing: Button(action: {
-//            print("Edit button pressed...")
-//        }) {
-//            Image(systemName: "slider.horizontal.2.square.on.square") // "slider.horizontal.3")
-//        })
-//    }
-//}
 
-struct IngredientsView: View {
-    
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Ingredients View
+
+struct IngredientsView: View
+{
     @EnvironmentObject var modelData: ShakerModel
     
     private var categories: [IngredientCategory] {
@@ -165,9 +147,10 @@ struct IngredientsView: View {
             var ic = IngredientCategory(name: category["category"] as? String ?? "",
                                         rec_id: category["id"] as? Int64 ?? 0)
             
-            // ic.index = Index(ic.name, contentID: ic.name)
             if let subitems = modelData.database.inredients(forCategory: ic.rec_id,
-                                                            showall: true, filter: nil, sort: nil) as? [NSDictionary] {
+                                                            showall: true,
+                                                            filter: nil,
+                                                            sort: nil) as? [NSDictionary] {
                 for sitem in subitems {
                     let i = Ingredient(name: sitem["name"] as? String ?? "",
                                        rec_id: sitem["id"] as? Int64 ?? 0,
@@ -195,36 +178,15 @@ struct IngredientsView: View {
                         }
                     }
                 }
-                .listStyle(InsetGroupedListStyle())
+                // .listStyle(InsetGroupedListStyle())
                 .navigationTitle("Ingredients")
+                .listStyle(InsetListStyle())
             }
         }
     }
 }
-                
-                
-//                IndexedList(categories) { element in
-//                        Section {
-//                            ForEach(element.ingredients, id: \.self) { ing in
-//                                Text(ing.name)
-//                                // IngredientRow(ing: ing)
-//                            }
-//                            //                        NavigationLink(destination: IngredientsView(category_id: element.rec_id, category: element.name)) {
-//                            //                            Text(element.name)
-//                            //                        }
-//                        } header: {
-//                            Text(element.index?.contentID as? String ?? "")
-//                                .id(element.id)
-//                        }
-//                    }
-//                }
-//                // .indexViewStyle(.page)
-//
-//            }
-//            .navigationTitle("Ingredients")
-//        }
-//    }
-//}
+
+
 struct IngredientsView_Previews: PreviewProvider
 {
     static var previews: some View {
