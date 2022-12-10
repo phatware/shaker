@@ -34,7 +34,8 @@ struct IngredientCategory : Identifiable, Hashable
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// Recipe Row View
 
-struct RecipeRow: View {
+struct RecipeRow: View
+{
     @EnvironmentObject var modelData: ShakerModel
     var rec_id: Int64
     
@@ -43,9 +44,34 @@ struct RecipeRow: View {
     }
     
     var body: some View {
-        NavigationLink(destination: Text(name)) {
+        NavigationLink(destination: CoctailDetailsView(rec_id: rec_id, alcogol: true)) {
             Text(name)
         }
+    }
+}
+
+struct CoctailSectionHeader: View
+{
+    var title: String
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.title2)
+                .foregroundColor(.black)
+                .padding()
+            Spacer()
+            //            Image(systemName: "chevron.up")
+            //                .rotationEffect(.degrees(isExpanded ? 180 : 0))
+            //                .foregroundColor(.black)
+            //                .padding(.trailing, 10)
+        }
+        .background(Color(white: 0.95))
+        .listRowInsets(EdgeInsets(
+            top: 0,
+            leading: 0,
+            bottom: 0,
+            trailing: 0))
     }
 }
 
@@ -58,7 +84,7 @@ struct FilteredRecipesView: View
     let ingredient : String
     
     private var filter: String {
-        return "ingredients LIKE '%\(ingredient)%'"
+        return "ingredients LIKE '%\(ingredient.sqlString)%'"
     }
     
     private var alcoholic: [Int64] {
@@ -77,7 +103,7 @@ struct FilteredRecipesView: View
                             RecipeRow(rec_id: rec_id)
                         }
                     } header: {
-                        Text("Alcoholic Beverages")
+                        CoctailSectionHeader(title: "Alcoholic Beverages")
                     }
                 }
                 if non_alcoholic.count > 0 {
@@ -86,7 +112,7 @@ struct FilteredRecipesView: View
                             RecipeRow(rec_id: rec_id)
                         }
                     } header: {
-                        Text("Non-alcoholic Beverages")
+                        CoctailSectionHeader(title: "Non-alcoholic Beverages")
                     }
                 }
             }
@@ -183,6 +209,13 @@ struct IngredientsView: View
                 .listStyle(InsetListStyle())
             }
         }
+    }
+}
+
+extension String
+{
+    public var sqlString : String {
+        return self.replacingOccurrences(of: "\'", with: "\'\'")
     }
 }
 
