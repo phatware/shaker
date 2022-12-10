@@ -16,11 +16,12 @@ import MapKit
  
  - SeeAlso: MapAnnotationView
  */
-class MapAnnotationClusterView: MKAnnotationView {
-
+class MapAnnotationClusterView: MKAnnotationView
+{
     private static let annotationSize = 32
     
-    override var annotation: MKAnnotation? {
+    override var annotation: MKAnnotation?
+    {
         willSet {
             guard let clusterAnnotation = newValue as? MKClusterAnnotation else {
                 return

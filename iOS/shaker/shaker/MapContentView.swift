@@ -15,32 +15,58 @@ struct MapContentView: View {
     private let trackingMode: MKUserTrackingMode = .none
     @State private var region: MKCoordinateRegion?
     @State private var pushDetail = false
-    @State private var selectedItam : MKMapItem?
+    @State private var pushSearch = false
+    @State private var selectedItem : MKMapItem?
     
     var body: some View {
         NavigationView {
-            VStack {
-                MapView(mapType: self.type,
-                        region: self.$region,
-                        publish: self.$pushDetail,
-                        selectedItam: self.$selectedItam,
-                        userTrackingMode: self.trackingMode)
-                .edgesIgnoringSafeArea(.top)
-                
-                //            if self.region != nil {
-                //                Text("\( self.regionToString(self.region!) )")
-                //            }
-                NavigationLink(isActive: $pushDetail) {
-                    MapDetails(mapItem: selectedItam)
-                } label: {
-                    EmptyView()
+            ZStack(alignment: .bottom) {
+                VStack {
+                    MapView(mapType: self.type,
+                            region: self.$region,
+                            publish: self.$pushDetail,
+                            selectedItam: self.$selectedItem,
+                            userTrackingMode: self.trackingMode)
+                    .edgesIgnoringSafeArea(.top)
+                    
+                    NavigationLink(isActive: $pushDetail) {
+                        MapDetails(mapItem: selectedItem)
+                    } label: {
+                        EmptyView()
+                    }
+                    NavigationLink(isActive: $pushSearch) {
+                        MapSearchView()
+                    } label: {
+                        EmptyView()
+                    }
                 }
+                Button(role: .none) {
+                    // TODO: search
+                    print("Search map")
+                    pushSearch = true
+                } label: {
+                    HStack {
+                        Image(systemName: "location.magnifyingglass")
+                            .font(.headline)
+                        Text("Search")
+                            .font(.headline)
+                    }
+                    .padding()
+                    .background(Color.black.opacity(0.6))
+                    .foregroundColor(.white)
+                    .cornerRadius(20)
+                }
+                // .padding(.top, 5)
+                .padding(.bottom, 15)
             }
             .onAppear {
                 // this is required to display the user's current location
                 self.requestLocationUsage()
                 if let coord = LocationService.shared.currentLocation?.coordinate {
-                    region = MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
+                    region = MKCoordinateRegion(center: coord,
+                                                span: MKCoordinateSpan.fromMeters(coord.latitude,
+                                                                                  lat_meters: Double.DELTA_LAT_METERS,
+                                                                                  lon_meters: Double.DELTA_LON_METERS))
                 }
             }
         }

@@ -10,7 +10,7 @@ import MapKit
 
 extension MKPointOfInterestCategory
 {    
-    static let drinkPointsOfInterest: [MKPointOfInterestCategory] = [.brewery, .cafe, .restaurant, .winery]
+    static let drinkPointsOfInterest: [MKPointOfInterestCategory] = [.brewery, .cafe, .restaurant, .winery, .nightlife]
     static let storePointsOfInterest: [MKPointOfInterestCategory] = [.store]
     static let defaultPointOfInterestSymbolName = "mappin.and.ellipse"
     
@@ -42,6 +42,8 @@ extension MKPointOfInterestCategory
             return "envelope"
         case .publicTransport:
             return "bus"
+        case .nightlife:
+            return "party.popper"
         default:
             return MKPointOfInterestCategory.defaultPointOfInterestSymbolName
         }

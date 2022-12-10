@@ -27,6 +27,16 @@ class LocationService: NSObject
         locationManager.requestLocation()
     }
     
+    func updateLocation(_ start: Bool = true) {
+        locationManager.requestWhenInUseAuthorization()
+        if start {
+            locationManager.startUpdatingLocation()
+        }
+        else {
+            locationManager.stopUpdatingLocation()
+        }
+    }
+    
     private func displayLocationServicesDeniedAlert() {
         
         UIAlertController.showMessage("Location services are denied", withTitle: "Location Services", withSettings: true)
@@ -48,5 +58,6 @@ extension LocationService: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         // Handle any errors that `CLLocationManager` returns.
+        print("Location failed: \(error.localizedDescription)")
     }
 }

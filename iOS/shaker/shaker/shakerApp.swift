@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct shakerApp: App {
+    
+    @StateObject private var modelData = ShakerModel()
+    
+    
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(modelData)
         }
     }
     

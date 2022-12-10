@@ -11,14 +11,13 @@ import MapKit
 struct MapDetails: View {
     
     var mapItem: MKMapItem?
-    private let delta = 0.005
-    private let defCoord : CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+    private let defCoord : CLLocationCoordinate2D = CLLocationCoordinate2D.defaultCoords()
     
     var body: some View {
         
         VStack(alignment: .leading) {
             Text(mapItem?.name ?? "Point of Interest")
-                .font(.headline)
+                .font(.title2)
                 .padding(.top, 5)
                 .padding(.bottom, 5)
             Text(mapItem?.placemark.formattedAddress ?? "")
@@ -41,7 +40,7 @@ struct MapDetails: View {
                 .padding(.bottom, 5)
             }
         }
-        .padding(.leading, 15)
+        .padding(.leading, 5)
         VStack(alignment: .center) {
             ZStack(alignment: .bottom) {
                                 
@@ -71,7 +70,7 @@ struct MapDetails: View {
                             .font(.headline)
                     }
                     .padding()
-                    .background(Color.green.opacity(0.8))
+                    .background(Color.black.opacity(0.6))
                     .foregroundColor(.white)
                     .cornerRadius(20)
                 }
@@ -85,7 +84,9 @@ struct MapDetails: View {
     var region: MKCoordinateRegion {
         MKCoordinateRegion(
             center: mapItem?.placemark.coordinate ?? defCoord,
-            span: MKCoordinateSpan(latitudeDelta: delta, longitudeDelta: delta)
+            span: MKCoordinateSpan.fromMeters((mapItem?.placemark.coordinate ?? defCoord).latitude,
+                                              lat_meters: Double.DELTA_LAT_METERS,
+                                              lon_meters: Double.DELTA_LON_METERS)
         )
     }
     

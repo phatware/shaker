@@ -30,7 +30,45 @@
 		F658BD96292DB5A700837D1F /* UserDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = F658BD92292DB5A700837D1F /* UserDatabase.m */; };
 		F658BD99292DB6B400837D1F /* NSFileManager+Folder.m in Sources */ = {isa = PBXBuildFile; fileRef = F658BD98292DB6B400837D1F /* NSFileManager+Folder.m */; };
 		F658BD9B292DB70D00837D1F /* WatchConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F658BD9A292DB70D00837D1F /* WatchConnect.swift */; };
+		F661648D294318C100228691 /* MapSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F661648C294318C100228691 /* MapSearchView.swift */; };
 		F6BCC3FB2930AAFC008E20F4 /* IngredientsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */; };
+		F6BCC3FF29371BD0008E20F4 /* ShakerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC3FE29371BD0008E20F4 /* ShakerModel.swift */; };
+		F6BCC40F29372DF7008E20F4 /* Indexable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40129372DF7008E20F4 /* Indexable.swift */; };
+		F6BCC41029372DF7008E20F4 /* View+IndexBarBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40229372DF7008E20F4 /* View+IndexBarBackground.swift */; };
+		F6BCC41129372DF7008E20F4 /* Index.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40329372DF7008E20F4 /* Index.swift */; };
+		F6BCC41229372DF7008E20F4 /* IndexBarBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40529372DF7008E20F4 /* IndexBarBackground.swift */; };
+		F6BCC41329372DF7008E20F4 /* EnvironmentValues+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40629372DF7008E20F4 /* EnvironmentValues+Extensions.swift */; };
+		F6BCC41429372DF7008E20F4 /* UIView+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40729372DF7008E20F4 /* UIView+Extensions.swift */; };
+		F6BCC41529372DF7008E20F4 /* ScrollAccessory+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40829372DF7008E20F4 /* ScrollAccessory+Extensions.swift */; };
+		F6BCC41629372DF7008E20F4 /* UITableViewCustomizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40929372DF7008E20F4 /* UITableViewCustomizer.swift */; };
+		F6BCC41729372DF7008E20F4 /* IndexBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40A29372DF7008E20F4 /* IndexBar.swift */; };
+		F6BCC41829372DF7008E20F4 /* IndexedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40B29372DF7008E20F4 /* IndexedList.swift */; };
+		F6BCC41929372DF7008E20F4 /* EnvironmentValues+IndexBarInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40C29372DF7008E20F4 /* EnvironmentValues+IndexBarInsets.swift */; };
+		F6BCC41A29372DF7008E20F4 /* IndexedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40D29372DF7008E20F4 /* IndexedScrollView.swift */; };
+		F6BCC41B29372DF7008E20F4 /* ScrollAccessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40E29372DF7008E20F4 /* ScrollAccessory.swift */; };
+		F6BCC41D29385191008E20F4 /* CollasibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC41C29385191008E20F4 /* CollasibleSection.swift */; };
+		F6D7B1EE293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1D8293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift */; };
+		F6D7B1EF293C2D2F00BCC446 /* BKDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1D9293C2D2F00BCC446 /* BKDiscovery.swift */; };
+		F6D7B1F0293C2D2F00BCC446 /* BKPeripheralStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DA293C2D2F00BCC446 /* BKPeripheralStateMachine.swift */; };
+		F6D7B1F1293C2D2F00BCC446 /* BKPeripheralConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DB293C2D2F00BCC446 /* BKPeripheralConfiguration.swift */; };
+		F6D7B1F2293C2D2F00BCC446 /* BKErrorDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DC293C2D2F00BCC446 /* BKErrorDomain.swift */; };
+		F6D7B1F3293C2D2F00BCC446 /* BKCBPeripheralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DD293C2D2F00BCC446 /* BKCBPeripheralManagerDelegateProxy.swift */; };
+		F6D7B1F4293C2D2F00BCC446 /* BKCentralStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DE293C2D2F00BCC446 /* BKCentralStateMachine.swift */; };
+		F6D7B1F5293C2D2F00BCC446 /* BKAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DF293C2D2F00BCC446 /* BKAvailability.swift */; };
+		F6D7B1F6293C2D2F00BCC446 /* BKRemoteCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E0293C2D2F00BCC446 /* BKRemoteCentral.swift */; };
+		F6D7B1F7293C2D2F00BCC446 /* BKRemotePeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E1293C2D2F00BCC446 /* BKRemotePeer.swift */; };
+		F6D7B1F8293C2D2F00BCC446 /* BKContinuousScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E2293C2D2F00BCC446 /* BKContinuousScanner.swift */; };
+		F6D7B1F9293C2D2F00BCC446 /* BKScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E3293C2D2F00BCC446 /* BKScanner.swift */; };
+		F6D7B1FA293C2D2F00BCC446 /* BKConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E4293C2D2F00BCC446 /* BKConnectionPool.swift */; };
+		F6D7B1FB293C2D2F00BCC446 /* BKPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E5293C2D2F00BCC446 /* BKPeripheral.swift */; };
+		F6D7B1FC293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E6293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift */; };
+		F6D7B1FD293C2D2F00BCC446 /* BKCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E7293C2D2F00BCC446 /* BKCentral.swift */; };
+		F6D7B1FE293C2D2F00BCC446 /* BKSendDataTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E8293C2D2F00BCC446 /* BKSendDataTask.swift */; };
+		F6D7B1FF293C2D2F00BCC446 /* BKConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1E9293C2D2F00BCC446 /* BKConfiguration.swift */; };
+		F6D7B200293C2D2F00BCC446 /* BKPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1EA293C2D2F00BCC446 /* BKPeer.swift */; };
+		F6D7B201293C2D2F00BCC446 /* BKRemotePeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1EB293C2D2F00BCC446 /* BKRemotePeripheral.swift */; };
+		F6D7B202293C2D2F00BCC446 /* BKDiscoveriesChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1EC293C2D2F00BCC446 /* BKDiscoveriesChange.swift */; };
+		F6D7B203293C2D2F00BCC446 /* BKConnectionAttempt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1ED293C2D2F00BCC446 /* BKConnectionAttempt.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,7 +103,46 @@
 		F658BD97292DB6B400837D1F /* NSFileManager+Folder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager+Folder.h"; sourceTree = "<group>"; };
 		F658BD98292DB6B400837D1F /* NSFileManager+Folder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+Folder.m"; sourceTree = "<group>"; };
 		F658BD9A292DB70D00837D1F /* WatchConnect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatchConnect.swift; sourceTree = "<group>"; };
+		F661648C294318C100228691 /* MapSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSearchView.swift; sourceTree = "<group>"; };
+		F661648E29442A4800228691 /* calc.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = calc.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientsView.swift; sourceTree = "<group>"; };
+		F6BCC3FE29371BD0008E20F4 /* ShakerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShakerModel.swift; sourceTree = "<group>"; };
+		F6BCC40129372DF7008E20F4 /* Indexable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Indexable.swift; sourceTree = "<group>"; };
+		F6BCC40229372DF7008E20F4 /* View+IndexBarBackground.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+IndexBarBackground.swift"; sourceTree = "<group>"; };
+		F6BCC40329372DF7008E20F4 /* Index.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Index.swift; sourceTree = "<group>"; };
+		F6BCC40529372DF7008E20F4 /* IndexBarBackground.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IndexBarBackground.swift; sourceTree = "<group>"; };
+		F6BCC40629372DF7008E20F4 /* EnvironmentValues+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+Extensions.swift"; sourceTree = "<group>"; };
+		F6BCC40729372DF7008E20F4 /* UIView+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+Extensions.swift"; sourceTree = "<group>"; };
+		F6BCC40829372DF7008E20F4 /* ScrollAccessory+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ScrollAccessory+Extensions.swift"; sourceTree = "<group>"; };
+		F6BCC40929372DF7008E20F4 /* UITableViewCustomizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UITableViewCustomizer.swift; sourceTree = "<group>"; };
+		F6BCC40A29372DF7008E20F4 /* IndexBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IndexBar.swift; sourceTree = "<group>"; };
+		F6BCC40B29372DF7008E20F4 /* IndexedList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IndexedList.swift; sourceTree = "<group>"; };
+		F6BCC40C29372DF7008E20F4 /* EnvironmentValues+IndexBarInsets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+IndexBarInsets.swift"; sourceTree = "<group>"; };
+		F6BCC40D29372DF7008E20F4 /* IndexedScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IndexedScrollView.swift; sourceTree = "<group>"; };
+		F6BCC40E29372DF7008E20F4 /* ScrollAccessory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollAccessory.swift; sourceTree = "<group>"; };
+		F6BCC41C29385191008E20F4 /* CollasibleSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollasibleSection.swift; sourceTree = "<group>"; };
+		F6D7B1D8293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKCBCentralManagerDelegateProxy.swift; sourceTree = "<group>"; };
+		F6D7B1D9293C2D2F00BCC446 /* BKDiscovery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKDiscovery.swift; sourceTree = "<group>"; };
+		F6D7B1DA293C2D2F00BCC446 /* BKPeripheralStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKPeripheralStateMachine.swift; sourceTree = "<group>"; };
+		F6D7B1DB293C2D2F00BCC446 /* BKPeripheralConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKPeripheralConfiguration.swift; sourceTree = "<group>"; };
+		F6D7B1DC293C2D2F00BCC446 /* BKErrorDomain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKErrorDomain.swift; sourceTree = "<group>"; };
+		F6D7B1DD293C2D2F00BCC446 /* BKCBPeripheralManagerDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKCBPeripheralManagerDelegateProxy.swift; sourceTree = "<group>"; };
+		F6D7B1DE293C2D2F00BCC446 /* BKCentralStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKCentralStateMachine.swift; sourceTree = "<group>"; };
+		F6D7B1DF293C2D2F00BCC446 /* BKAvailability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKAvailability.swift; sourceTree = "<group>"; };
+		F6D7B1E0293C2D2F00BCC446 /* BKRemoteCentral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKRemoteCentral.swift; sourceTree = "<group>"; };
+		F6D7B1E1293C2D2F00BCC446 /* BKRemotePeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKRemotePeer.swift; sourceTree = "<group>"; };
+		F6D7B1E2293C2D2F00BCC446 /* BKContinuousScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKContinuousScanner.swift; sourceTree = "<group>"; };
+		F6D7B1E3293C2D2F00BCC446 /* BKScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKScanner.swift; sourceTree = "<group>"; };
+		F6D7B1E4293C2D2F00BCC446 /* BKConnectionPool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKConnectionPool.swift; sourceTree = "<group>"; };
+		F6D7B1E5293C2D2F00BCC446 /* BKPeripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKPeripheral.swift; sourceTree = "<group>"; };
+		F6D7B1E6293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKCBPeripheralDelegateProxy.swift; sourceTree = "<group>"; };
+		F6D7B1E7293C2D2F00BCC446 /* BKCentral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKCentral.swift; sourceTree = "<group>"; };
+		F6D7B1E8293C2D2F00BCC446 /* BKSendDataTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKSendDataTask.swift; sourceTree = "<group>"; };
+		F6D7B1E9293C2D2F00BCC446 /* BKConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKConfiguration.swift; sourceTree = "<group>"; };
+		F6D7B1EA293C2D2F00BCC446 /* BKPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKPeer.swift; sourceTree = "<group>"; };
+		F6D7B1EB293C2D2F00BCC446 /* BKRemotePeripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKRemotePeripheral.swift; sourceTree = "<group>"; };
+		F6D7B1EC293C2D2F00BCC446 /* BKDiscoveriesChange.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKDiscoveriesChange.swift; sourceTree = "<group>"; };
+		F6D7B1ED293C2D2F00BCC446 /* BKConnectionAttempt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKConnectionAttempt.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +175,7 @@
 		F658BD522929C5B700837D1F /* shaker */ = {
 			isa = PBXGroup;
 			children = (
+				F6D7B1D7293C2D2F00BCC446 /* BLE */,
 				F658BD8C292DB56300837D1F /* database */,
 				F658BD87292B04FD00837D1F /* utilities */,
 				F658BD762929F6AF00837D1F /* shaker.entitlements */,
@@ -108,8 +186,8 @@
 				F658BD572929C5B900837D1F /* Assets.xcassets */,
 				F658BD592929C5B900837D1F /* Preview Content */,
 				F658BD612929F31200837D1F /* MapContentView.swift */,
-				F658BD7F2929FC5100837D1F /* MKPlacemark+Extension.swift */,
 				F658BD85292A1BBD00837D1F /* MapDetails.swift */,
+				F661648C294318C100228691 /* MapSearchView.swift */,
 				F658BD632929F3B400837D1F /* SwiftUIMapView */,
 			);
 			path = shaker;
@@ -126,36 +204,32 @@
 		F658BD632929F3B400837D1F /* SwiftUIMapView */ = {
 			isa = PBXGroup;
 			children = (
+				F658BD662929F3B400837D1F /* MapView.swift */,
+				F658BD7F2929FC5100837D1F /* MKPlacemark+Extension.swift */,
 				F658BD792929FBD500837D1F /* MKPointOfInterestCategory+Extension.swift */,
 				F658BD642929F3B400837D1F /* CoreLocation+Equatable.swift */,
 				F658BD652929F3B400837D1F /* MKMapView+MapViewAnnotation.swift */,
-				F658BD662929F3B400837D1F /* MapView.swift */,
 				F658BD88292C92BD00837D1F /* CustomAnnotation.swift */,
-				F658BD692929F3B400837D1F /* Views */,
+				F658BD6A2929F3B400837D1F /* MapAnnotationClusterView.swift */,
+				F658BD682929F3B400837D1F /* MapAnnotation.swift */,
+				F658BD6B2929F3B400837D1F /* MapAnnotationView.swift */,
 				F658BD81292A005D00837D1F /* shaker-Bridging-Header.h */,
 			);
 			path = SwiftUIMapView;
 			sourceTree = "<group>";
 		};
-		F658BD692929F3B400837D1F /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				F658BD682929F3B400837D1F /* MapAnnotation.swift */,
-				F658BD6A2929F3B400837D1F /* MapAnnotationClusterView.swift */,
-				F658BD6B2929F3B400837D1F /* MapAnnotationView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		F658BD87292B04FD00837D1F /* utilities */ = {
 			isa = PBXGroup;
 			children = (
+				F6BCC40029372DF7008E20F4 /* SwiftUIIndexedList */,
 				F658BD9A292DB70D00837D1F /* WatchConnect.swift */,
 				F658BD772929FBA900837D1F /* LocationService.swift */,
+				F6BCC41C29385191008E20F4 /* CollasibleSection.swift */,
 				F658BD83292A005E00837D1F /* UIAlertController+Progress.h */,
 				F658BD82292A005E00837D1F /* UIAlertController+Progress.m */,
 				F658BD97292DB6B400837D1F /* NSFileManager+Folder.h */,
 				F658BD98292DB6B400837D1F /* NSFileManager+Folder.m */,
+				F661648E29442A4800228691 /* calc.playground */,
 			);
 			path = utilities;
 			sourceTree = "<group>";
@@ -163,6 +237,7 @@
 		F658BD8C292DB56300837D1F /* database */ = {
 			isa = PBXGroup;
 			children = (
+				F6BCC3FE29371BD0008E20F4 /* ShakerModel.swift */,
 				F658BD94292DB5A700837D1F /* CoctailsDatabase.h */,
 				F658BD91292DB5A700837D1F /* CoctailsDatabase.m */,
 				F658BD93292DB5A700837D1F /* UserDatabase.h */,
@@ -171,6 +246,63 @@
 				F658BD8D292DB57C00837D1F /* user.sql */,
 			);
 			path = database;
+			sourceTree = "<group>";
+		};
+		F6BCC40029372DF7008E20F4 /* SwiftUIIndexedList */ = {
+			isa = PBXGroup;
+			children = (
+				F6BCC40429372DF7008E20F4 /* Internal */,
+				F6BCC40129372DF7008E20F4 /* Indexable.swift */,
+				F6BCC40229372DF7008E20F4 /* View+IndexBarBackground.swift */,
+				F6BCC40329372DF7008E20F4 /* Index.swift */,
+				F6BCC40B29372DF7008E20F4 /* IndexedList.swift */,
+				F6BCC40C29372DF7008E20F4 /* EnvironmentValues+IndexBarInsets.swift */,
+				F6BCC40D29372DF7008E20F4 /* IndexedScrollView.swift */,
+				F6BCC40E29372DF7008E20F4 /* ScrollAccessory.swift */,
+			);
+			path = SwiftUIIndexedList;
+			sourceTree = "<group>";
+		};
+		F6BCC40429372DF7008E20F4 /* Internal */ = {
+			isa = PBXGroup;
+			children = (
+				F6BCC40529372DF7008E20F4 /* IndexBarBackground.swift */,
+				F6BCC40629372DF7008E20F4 /* EnvironmentValues+Extensions.swift */,
+				F6BCC40729372DF7008E20F4 /* UIView+Extensions.swift */,
+				F6BCC40829372DF7008E20F4 /* ScrollAccessory+Extensions.swift */,
+				F6BCC40929372DF7008E20F4 /* UITableViewCustomizer.swift */,
+				F6BCC40A29372DF7008E20F4 /* IndexBar.swift */,
+			);
+			path = Internal;
+			sourceTree = "<group>";
+		};
+		F6D7B1D7293C2D2F00BCC446 /* BLE */ = {
+			isa = PBXGroup;
+			children = (
+				F6D7B1D8293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift */,
+				F6D7B1D9293C2D2F00BCC446 /* BKDiscovery.swift */,
+				F6D7B1DA293C2D2F00BCC446 /* BKPeripheralStateMachine.swift */,
+				F6D7B1DB293C2D2F00BCC446 /* BKPeripheralConfiguration.swift */,
+				F6D7B1DC293C2D2F00BCC446 /* BKErrorDomain.swift */,
+				F6D7B1DD293C2D2F00BCC446 /* BKCBPeripheralManagerDelegateProxy.swift */,
+				F6D7B1DE293C2D2F00BCC446 /* BKCentralStateMachine.swift */,
+				F6D7B1DF293C2D2F00BCC446 /* BKAvailability.swift */,
+				F6D7B1E0293C2D2F00BCC446 /* BKRemoteCentral.swift */,
+				F6D7B1E1293C2D2F00BCC446 /* BKRemotePeer.swift */,
+				F6D7B1E2293C2D2F00BCC446 /* BKContinuousScanner.swift */,
+				F6D7B1E3293C2D2F00BCC446 /* BKScanner.swift */,
+				F6D7B1E4293C2D2F00BCC446 /* BKConnectionPool.swift */,
+				F6D7B1E5293C2D2F00BCC446 /* BKPeripheral.swift */,
+				F6D7B1E6293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift */,
+				F6D7B1E7293C2D2F00BCC446 /* BKCentral.swift */,
+				F6D7B1E8293C2D2F00BCC446 /* BKSendDataTask.swift */,
+				F6D7B1E9293C2D2F00BCC446 /* BKConfiguration.swift */,
+				F6D7B1EA293C2D2F00BCC446 /* BKPeer.swift */,
+				F6D7B1EB293C2D2F00BCC446 /* BKRemotePeripheral.swift */,
+				F6D7B1EC293C2D2F00BCC446 /* BKDiscoveriesChange.swift */,
+				F6D7B1ED293C2D2F00BCC446 /* BKConnectionAttempt.swift */,
+			);
+			path = BLE;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -247,25 +379,63 @@
 			buildActionMask = 2147483647;
 			files = (
 				F658BD84292A005E00837D1F /* UIAlertController+Progress.m in Sources */,
+				F6D7B1FD293C2D2F00BCC446 /* BKCentral.swift in Sources */,
 				F658BD722929F3B400837D1F /* MapAnnotationView.swift in Sources */,
+				F661648D294318C100228691 /* MapSearchView.swift in Sources */,
 				F658BD712929F3B400837D1F /* MapAnnotationClusterView.swift in Sources */,
+				F6BCC41329372DF7008E20F4 /* EnvironmentValues+Extensions.swift in Sources */,
+				F6BCC41729372DF7008E20F4 /* IndexBar.swift in Sources */,
 				F658BD6C2929F3B400837D1F /* CoreLocation+Equatable.swift in Sources */,
+				F6D7B1F3293C2D2F00BCC446 /* BKCBPeripheralManagerDelegateProxy.swift in Sources */,
 				F658BD95292DB5A700837D1F /* CoctailsDatabase.m in Sources */,
+				F6D7B1FA293C2D2F00BCC446 /* BKConnectionPool.swift in Sources */,
+				F6BCC41B29372DF7008E20F4 /* ScrollAccessory.swift in Sources */,
+				F6D7B1F9293C2D2F00BCC446 /* BKScanner.swift in Sources */,
+				F6BCC41829372DF7008E20F4 /* IndexedList.swift in Sources */,
+				F6BCC41029372DF7008E20F4 /* View+IndexBarBackground.swift in Sources */,
+				F6BCC41629372DF7008E20F4 /* UITableViewCustomizer.swift in Sources */,
+				F6D7B1F8293C2D2F00BCC446 /* BKContinuousScanner.swift in Sources */,
 				F658BD7A2929FBD500837D1F /* MKPointOfInterestCategory+Extension.swift in Sources */,
 				F658BD6E2929F3B400837D1F /* MapView.swift in Sources */,
 				F658BD96292DB5A700837D1F /* UserDatabase.m in Sources */,
+				F6BCC40F29372DF7008E20F4 /* Indexable.swift in Sources */,
+				F6D7B1EE293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift in Sources */,
+				F6BCC41A29372DF7008E20F4 /* IndexedScrollView.swift in Sources */,
+				F6D7B1FC293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift in Sources */,
+				F6D7B202293C2D2F00BCC446 /* BKDiscoveriesChange.swift in Sources */,
+				F6D7B1FB293C2D2F00BCC446 /* BKPeripheral.swift in Sources */,
 				F658BD9B292DB70D00837D1F /* WatchConnect.swift in Sources */,
+				F6D7B1FF293C2D2F00BCC446 /* BKConfiguration.swift in Sources */,
+				F6D7B1F1293C2D2F00BCC446 /* BKPeripheralConfiguration.swift in Sources */,
+				F6BCC41429372DF7008E20F4 /* UIView+Extensions.swift in Sources */,
 				F658BD89292C92BD00837D1F /* CustomAnnotation.swift in Sources */,
 				F658BD802929FC5100837D1F /* MKPlacemark+Extension.swift in Sources */,
+				F6D7B1F7293C2D2F00BCC446 /* BKRemotePeer.swift in Sources */,
 				F6BCC3FB2930AAFC008E20F4 /* IngredientsView.swift in Sources */,
+				F6BCC41129372DF7008E20F4 /* Index.swift in Sources */,
+				F6D7B203293C2D2F00BCC446 /* BKConnectionAttempt.swift in Sources */,
+				F6BCC41929372DF7008E20F4 /* EnvironmentValues+IndexBarInsets.swift in Sources */,
 				F658BD99292DB6B400837D1F /* NSFileManager+Folder.m in Sources */,
+				F6BCC41229372DF7008E20F4 /* IndexBarBackground.swift in Sources */,
+				F6D7B1EF293C2D2F00BCC446 /* BKDiscovery.swift in Sources */,
 				F658BD562929C5B700837D1F /* ContentView.swift in Sources */,
+				F6D7B1F2293C2D2F00BCC446 /* BKErrorDomain.swift in Sources */,
 				F658BD622929F31200837D1F /* MapContentView.swift in Sources */,
 				F658BD782929FBA900837D1F /* LocationService.swift in Sources */,
 				F658BD86292A1BBD00837D1F /* MapDetails.swift in Sources */,
+				F6D7B201293C2D2F00BCC446 /* BKRemotePeripheral.swift in Sources */,
 				F658BD6D2929F3B400837D1F /* MKMapView+MapViewAnnotation.swift in Sources */,
+				F6D7B1F5293C2D2F00BCC446 /* BKAvailability.swift in Sources */,
 				F658BD542929C5B700837D1F /* shakerApp.swift in Sources */,
 				F658BD702929F3B400837D1F /* MapAnnotation.swift in Sources */,
+				F6D7B1F6293C2D2F00BCC446 /* BKRemoteCentral.swift in Sources */,
+				F6BCC41D29385191008E20F4 /* CollasibleSection.swift in Sources */,
+				F6D7B200293C2D2F00BCC446 /* BKPeer.swift in Sources */,
+				F6D7B1FE293C2D2F00BCC446 /* BKSendDataTask.swift in Sources */,
+				F6BCC41529372DF7008E20F4 /* ScrollAccessory+Extensions.swift in Sources */,
+				F6D7B1F0293C2D2F00BCC446 /* BKPeripheralStateMachine.swift in Sources */,
+				F6D7B1F4293C2D2F00BCC446 /* BKCentralStateMachine.swift in Sources */,
+				F6BCC3FF29371BD0008E20F4 /* ShakerModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
