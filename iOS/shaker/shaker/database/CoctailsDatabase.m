@@ -71,24 +71,24 @@
     NSFileManager *	fileManager = [NSFileManager defaultManager];
     NSError *		error = nil;
     BOOL res = [fileManager fileExistsAtPath:self.databasename];
-    if ( !res )
-    {
-        NSString *  documentsPath = [NSFileManager documentsPath];
-        NSString *  name = [documentsPath stringByAppendingPathComponent:@"shaker.sql"];
-        res = [fileManager fileExistsAtPath:name];
-        if ( res )
-        {
-            res = [NSFileManager moveToShared:@"shaker.sql" error:&error];
-            if ( res )
-            {
-                res = [fileManager fileExistsAtPath:self.databasename];
-            }
-            else
-            {
-                NSLog( @"Cant move from local to shared with message '%@'.", [error localizedDescription]);
-            }
-        }
-    }
+//    if ( !res )
+//    {
+//        NSString *  documentsPath = [NSFileManager documentsPath];
+//        NSString *  name = [documentsPath stringByAppendingPathComponent:@"shaker.sql"];
+//        res = [fileManager fileExistsAtPath:name];
+//        if ( res )
+//        {
+//            res = [NSFileManager moveToShared:@"shaker.sql" error:&error];
+//            if ( res )
+//            {
+//                res = [fileManager fileExistsAtPath:self.databasename];
+//            }
+//            else
+//            {
+//                NSLog( @"Cant move from local to shared with message '%@'.", [error localizedDescription]);
+//            }
+//        }
+//    }
     if ( !res )
     {
         // The writable database does not exist, so copy the default to the appropriate location.

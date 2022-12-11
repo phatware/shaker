@@ -21,6 +21,7 @@ int main(int argc, const char * argv[])
         }
         
         NSString * db_file;
+        NSString * user_file;
         NSString * csv_file = [NSString stringWithUTF8String:argv[1]];
         if (argc > 2)
         {
@@ -32,7 +33,11 @@ int main(int argc, const char * argv[])
             db_file = [db_file stringByAppendingPathExtension:@"sql"];
         }
         
-        BOOL res = [db importFromCSV:csv_file toDatabase:db_file];
+        user_file = [db_file stringByDeletingPathExtension];
+        user_file = [user_file stringByDeletingLastPathComponent];
+        user_file = [user_file stringByAppendingPathComponent:@"user.sql"];
+        
+        BOOL res = [db importFromCSV:csv_file toDatabase:db_file userDatabase:user_file];
         if (res)
             printf("Import completed successfully!\n");
         else

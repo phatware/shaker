@@ -15,6 +15,7 @@
 @interface UserDatabase : NSObject
 
 - (Boolean) initializeDatabase;
+- (nullable sqlite3 *) createDatabase:(nonnull NSString *)filename;
 - (sqlite3_int64) createNewUserRecord:(sqlite3_int64)coctail_id;
 - (nullable NSDictionary *) getUserRecord:(sqlite3_int64)record_id noImage:(BOOL)noImage;
 - (BOOL) updateUserRecord:(sqlite3_int64)record_id note:(nullable NSString *)note rating:(int)rating visible:(BOOL)visible;

@@ -74,24 +74,24 @@
     NSFileManager *	fileManager = [NSFileManager defaultManager];
     NSError *		error = nil;
     BOOL res = [fileManager fileExistsAtPath:self.databasename];
-//    if ( !res )
-//    {
-//        NSString *  documentsPath = [NSFileManager documentsPath];
-//        NSString *  name = [documentsPath stringByAppendingPathComponent:@"shaker.sql"];
-//        res = [fileManager fileExistsAtPath:name];
-//        if ( res )
-//        {
-//            res = [NSFileManager moveToShared:@"shaker.sql" error:&error];
-//            if ( res )
-//            {
-//                res = [fileManager fileExistsAtPath:self.databasename];
-//            }
-//            else
-//            {
-//                NSLog( @"Cant move from local to shared with message '%@'.", [error localizedDescription]);
-//            }
-//        }
-//    }
+    if ( !res )
+    {
+        NSString *  documentsPath = [NSFileManager documentsPath];
+        NSString *  name = [documentsPath stringByAppendingPathComponent:@"shaker.sql"];
+        res = [fileManager fileExistsAtPath:name];
+        if ( res )
+        {
+            res = [NSFileManager moveToShared:@"shaker.sql" error:&error];
+            if ( res )
+            {
+                res = [fileManager fileExistsAtPath:self.databasename];
+            }
+            else
+            {
+                NSLog( @"Cant move from local to shared with message '%@'.", [error localizedDescription]);
+            }
+        }
+    }
     if ( !res )
     {
         // The writable database does not exist, so copy the default to the appropriate location.
@@ -249,6 +249,10 @@
             [selectedRecords addObject:value];
         }
     }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+    }
     
     sqlite3_clear_bindings(statement);
     sqlite3_finalize(statement);
@@ -362,28 +366,7 @@
 
     adrinks_count = [self getItemCount:@"harddrinks" filter:nil];
     
-#ifdef IMPORT_FROM_CSV
-//    NSArray *   paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-//    NSString *  documentsPath = [paths objectAtIndex:0];
-//    NSString *  filename = [documentsPath stringByAppendingPathComponent:@"ingredients.csv"];
-//    NSLog( @"%@", filename );
-//
-//    if ( adrinks_count < 1 )
-//    {
-//        // TODO: this is temporary database generator, remove later
-//        NSString *	originalData = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"drinks.csv"];
-//
-//        [self importFromCSV:originalData];
-//        [self dumpIngredientsToCSV:filename];
-//        adrinks_count = [self getItemCount:@"harddrinks" filter:nil];
-//    }
-//    else
-//    {
-//        NSString *	catData = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"ingredients-master.csv"];
-//        [self importCategoriesFromCSV:catData];
-//        [self dumpIngredientsToCSV:filename];
-//    }
-#else
+#ifndef IMPORT_FROM_CSV
     self.wconnect = [[WatchConnect alloc] initWithDatabase:self];
 #endif // IMPORT_FROM_CSV
     
@@ -456,7 +439,7 @@
         }
         else
         {
-            NSLog( @"Error sqlite3_prepare_v2" );
+            NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
             bResult = NO;
         }
     }
@@ -479,10 +462,11 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 {
     BOOL result = YES;
     sqlite3_stmt *    sql_statement = nil;
-    const char * sql = "UPDATE ingredients SET enabled=?";
+    const char * sql = "UPDATE ingredients SET enabled=?, modified=?";
     if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
     {
         sqlite3_bind_int( sql_statement, 1, enable ? 1 : 0 );
+        sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
         if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
         {
             // Error...
@@ -503,11 +487,12 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 {
     BOOL result = YES;
     sqlite3_stmt *	sql_statement = nil;
-    const char * sql = "UPDATE ingredients SET enabled=? WHERE record_id=?";
+    const char * sql = "UPDATE ingredients SET enabled=?, modified=? WHERE record_id=?";
     if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
     {
         sqlite3_bind_int( sql_statement, 1, enable ? 1 : 0 );
-        sqlite3_bind_int64( sql_statement, 2, recordid );
+        sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+        sqlite3_bind_int64( sql_statement, 3, recordid );
         if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
         {
             // Error...
@@ -631,7 +616,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
                                     (alcohol ? @"harddrinks" : @"softdrinks"), randomID] UTF8String];
             sqlite3_stmt *	statement = NULL;
 
-            if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
+            if ( sqlite3_prepare_v2(sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
             {
                 while ( sqlite3_step(statement) == SQLITE_ROW )
                 {
@@ -657,6 +642,10 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
                     }
                 }
                 sqlite3_finalize( statement );
+            }
+            else
+            {
+                NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
             }
         } while( record_id < 0 && retry_count++ < MAX_RETRY_NUMBER );
     }
@@ -706,10 +695,8 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 - (UIImage *) getPhoto:(sqlite3_int64)record_id alcohol:(BOOL)alcohol
 {
     const char *	sql = [[NSString stringWithFormat:@"SELECT user_id FROM %@ WHERE record_id = %lld", (alcohol ? @"harddrinks" : @"softdrinks"), record_id] UTF8String];
-    
     sqlite3_stmt *	statement = NULL;
-    
-    UIImage * result = nil;
+    UIImage *       result = nil;
     
     if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) != SQLITE_OK )
     {
@@ -815,12 +802,13 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
             {
                 unlocked = YES;
                 sqlite3_stmt *	sql_statement = nil;
-                const char * sql = [[NSString stringWithFormat:@"UPDATE %@ SET unlocked=?, user_id=? WHERE record_id=?", strTable] UTF8String];
+                const char * sql = [[NSString stringWithFormat:@"UPDATE %@ SET unlocked=?, user_id=?, modified=? WHERE record_id=?", strTable] UTF8String];
                 if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
                 {
                     sqlite3_bind_int( sql_statement, 1, 1 );
                     sqlite3_bind_int64( sql_statement, 2, user_id );
-                    sqlite3_bind_int64( sql_statement, 3, record_id );
+                    sqlite3_bind_int64(sql_statement, 3, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                    sqlite3_bind_int64( sql_statement, 4, record_id );
                     if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
                     {
                         // Error...
@@ -837,6 +825,10 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 #endif // IMPORT_FROM_CSV
                     }
                     sqlite3_finalize( sql_statement );
+                }
+                else
+                {
+                    NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
                 }
             }
             [result setObject:[NSNumber numberWithInt:0] forKey:@"userrating"];
@@ -867,41 +859,42 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
     if (SQLITE_OK == rc && pDb != NULL )
     {
         // create tables
+        sqlite3_int64 now = (sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]);
         const char * harddrinks_table = "CREATE TABLE harddrinks( record_id integer PRIMARY KEY NOT NULL, name text, "
                                         "ingredients text, instructions text, rating integer, comments text, user_id integer, "
                                         "shopping text, category_id integer, shopcount integer, glass_id integer, shopping_ids "
-                                        "blob, enabled boolean, unlocked boolean, FOREIGN KEY(glass_id) REFERENCES "
+                                        "blob, enabled boolean, unlocked boolean, created integer, modified integer, FOREIGN KEY(glass_id) REFERENCES "
                                         "glasses(grecord_id), FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );";
         const char * softdrinks_table = "CREATE TABLE softdrinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, "
                                         "instructions text, rating integer, comments text, user_id integer, shopping text, category_id "
                                         "integer, shopcount integer, glass_id integer, shopping_ids blob, enabled boolean, unlocked "
-                                        "boolean, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), FOREIGN KEY(category_id) "
-                                        "REFERENCES categories(crecord_id) );";
-        const char * glasses_table =    "CREATE TABLE glasses( grecord_id integer PRIMARY KEY NOT NULL, glass text, count integer );";
-        const char * categories_table = "CREATE TABLE categories( crecord_id integer PRIMARY KEY NOT NULL, category text, count integer );";
+                                        "boolean, created integer, modified integer, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), "
+                                        "FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );";
+        const char * glasses_table =    "CREATE TABLE glasses( grecord_id integer PRIMARY KEY NOT NULL, glass text, count integer, created integer, modified integer );";
+        const char * categories_table = "CREATE TABLE categories( crecord_id integer PRIMARY KEY NOT NULL, category text, count integer, created integer, modified integer );";
         const char * ingredients_table= "CREATE TABLE ingredients( record_id integer PRIMARY KEY NOT NULL, item text, used integer, options "
-                                        "integer, enabled boolean, enabled_default boolean, category_id integer );";
-        const char * ingr_types_table = "CREATE TABLE ingredient_types ( 'record_id' INTEGER PRIMARY KEY, category TEXT, category_id integer );";
+                                        "integer, enabled boolean, enabled_default boolean, category_id integer, created integer, modified integer );";
+        const char * ingr_types_table = "CREATE TABLE ingredient_types ( 'record_id' INTEGER PRIMARY KEY, category TEXT, category_id integer, created integer, modified integer );";
         const char * types[] = {
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Vodka', 1);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Gin', 2);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Rum', 3);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Whiskey', 4);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Brandy / Cognac', 5);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Tequila', 6);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Schnapps', 7);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Liqueur', 8);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Other Liquors', 19);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Wine / Port / Vermouth', 9);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Beer / Malt / Cooler', 13);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Juice / Syrup / Mix', 11);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Soda / Soft Drinks', 10);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Milk / Cream / Ice Cream', 12);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Coffee / Tea / Cocoa', 18);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Fruit / Berries / Nuts', 14);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Jello / Puree / Sweetener', 17);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Garnish / Spice / Sauce', 15);",
-            "INSERT INTO ingredient_types (category, category_id) VALUES ('Miscellaneous', 16);"
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Vodka', 1, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Gin', 2, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Rum', 3, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Whiskey', 4, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Brandy / Cognac', 5, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Tequila', 6, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Schnapps', 7, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Liqueur', 8, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Other Liquors', 19, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Wine / Port / Vermouth', 9, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Beer / Malt / Cooler', 13, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Juice / Syrup / Mix', 11, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Soda / Soft Drinks', 10, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Milk / Cream / Ice Cream', 12, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Coffee / Tea / Cocoa', 18, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Fruit / Berries / Nuts', 14, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Jello / Puree / Sweetener', 17, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Garnish / Spice / Sauce', 15, %llu, %llu);",
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Miscellaneous', 16, %llu, %llu);"
         };
         const size_t type_cnt = sizeof(types)/sizeof(types[0]);
 
@@ -924,9 +917,11 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
         if (SQLITE_OK != rc)
             goto error;
 
+        char insert_type[256];
         for (size_t i = 0; i < type_cnt; i++)
         {
-            rc = sqlite3_exec(pDb, types[i], NULL, NULL, NULL);
+            sprintf(insert_type, types[i], now, now);
+            rc = sqlite3_exec(pDb, insert_type, NULL, NULL, NULL);
             if (SQLITE_OK != rc)
                 goto error;
         }
@@ -962,17 +957,23 @@ error:
         }
         sqlite3_finalize( statement );
     }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+    }
     if ( record_id < 0 )
     {
         sqlite3_stmt *	sql_statement = nil;
         // does not exist, add new
-        const char * sql = "insert into categories (category) values (?)";
+        const char * sql = "insert into categories (category, created, modified) values (?, ?, ?)";
         if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) != SQLITE_OK)
         {
-            NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+            NSLog(@"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ));
             return record_id;
         }
-        sqlite3_bind_text( sql_statement, 1, [category UTF8String],  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(sql_statement, 1, [category UTF8String],  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+        sqlite3_bind_int64(sql_statement, 3, (sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
         //execute
         int success = sqlite3_step(sql_statement);
         
@@ -1007,17 +1008,23 @@ error:
         }
         sqlite3_finalize( statement );
     }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+    }
     if ( record_id < 0 )
     {
         sqlite3_stmt *	sql_statement = nil;
         // does not exist, add new
-        const char * sql = "insert into glasses (glass) values (?)";
+        const char * sql = "insert into glasses (glass, created, modified) values (?, ?, ?)";
         if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) != SQLITE_OK)
         {
             NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
             return record_id;
         }
         sqlite3_bind_text( sql_statement, 1, [glass UTF8String],  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+        sqlite3_bind_int64(sql_statement, 3, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
         //execute
         int success = sqlite3_step(sql_statement);
         
@@ -1057,7 +1064,7 @@ error:
         {
             used++;
             sqlite3_stmt *	sql_statement = nil;
-            const char * sql = "UPDATE ingredients SET enabled=?, enabled_default=?, used=? WHERE record_id=?";
+            const char * sql = "UPDATE ingredients SET enabled=?, enabled_default=?, used=?, modified=? WHERE record_id=?";
             if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
             {
                 if ( enabled && used > 4 )
@@ -1071,7 +1078,8 @@ error:
                     sqlite3_bind_int( sql_statement, 2, 0 );
                 }
                 sqlite3_bind_int( sql_statement, 3, used );
-                sqlite3_bind_int64( sql_statement, 4, record_id );
+                sqlite3_bind_int64(sql_statement, 4, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                sqlite3_bind_int64( sql_statement, 5, record_id );
                 if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
                 {
                     // Error...
@@ -1082,21 +1090,28 @@ error:
             }
         }
     }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+    }
     if ( record_id < 0 )
     {
         sqlite3_stmt *	sql_statement = nil;
         // does not exist, add new
-        const char * sql = "INSERT INTO ingredients (item, options, enabled, enabled_default, used) VALUES (?, ?, ?, ?, ?)";
+        const char * sql = "INSERT INTO ingredients (item, options, enabled, enabled_default, used, created, modified) VALUES (?, ?, ?, ?, ?, ?, ?)";
         if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) != SQLITE_OK)
         {
             NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
             return record_id;
         }
-        sqlite3_bind_text( sql_statement, 1, [item UTF8String],  -1, SQLITE_TRANSIENT);
-        sqlite3_bind_int( sql_statement, 2, 0 );
-        sqlite3_bind_int( sql_statement, 3, 0 );
-        sqlite3_bind_int( sql_statement, 4, 0 );
-        sqlite3_bind_int( sql_statement, 5, 1 );
+        int index = 1;
+        sqlite3_bind_text(sql_statement, index++, [item UTF8String],  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(sql_statement, index++, 0);
+        sqlite3_bind_int(sql_statement, index++, 0);
+        sqlite3_bind_int(sql_statement, index++, 0);
+        sqlite3_bind_int(sql_statement, index++, 1);
+        sqlite3_bind_int64(sql_statement, index++, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+        sqlite3_bind_int64(sql_statement, index++, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
 
         //execute
         int success = sqlite3_step(sql_statement);
@@ -1436,11 +1451,12 @@ error:
                 if ( cat > 0 )
                 {
                     sqlite3_stmt *	sql_statement = nil;
-                    const char * sql = "UPDATE ingredients SET category_id=? WHERE record_id=?";
+                    const char * sql = "UPDATE ingredients SET category_id=?, modified=? WHERE record_id=?";
                     if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
                     {
                         sqlite3_bind_int( sql_statement, 1, cat );
-                        sqlite3_bind_int64( sql_statement, 2, recid );
+                        sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                        sqlite3_bind_int64( sql_statement, 3, recid );
                         if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
                         {
                             // Error...
@@ -1452,8 +1468,12 @@ error:
                 }
             }
         }
+        sqlite3_finalize( statement );
     }
-    sqlite3_finalize( statement );
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+    }
 }
 
 
@@ -1481,6 +1501,10 @@ error:
                 NSString * strRow = [NSString stringWithFormat:@"%s,%d,%d,%d,%d,%d\n", name, used, options, enabled, enabled_default, cat];
                 strData = [strData stringByAppendingString:strRow];
             }
+        }
+        else
+        {
+            NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
         }
         sqlite3_finalize( statement );
         if ( [strData length] > 0 )
@@ -1558,18 +1582,22 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                     if ( name != nil )
                     {
                         sqlite3_stmt *	sql_statement = nil;
-                        const char * sql = "UPDATE ingredients SET category_id=? WHERE item=?";
+                        const char * sql = "UPDATE ingredients SET category_id=?, modified=? WHERE item=?";
                         if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
                         {
                             sqlite3_bind_int( sql_statement, 1, cat );
-                            sqlite3_bind_text( sql_statement, 2, [name UTF8String],  -1, SQLITE_TRANSIENT );
+                            sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                            sqlite3_bind_text( sql_statement, 3, [name UTF8String],  -1, SQLITE_TRANSIENT );
                             if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
                             {
                                 // Error...
                                 NSLog( @"Error: failed to update ingredients record with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
-                                
                             }
                             sqlite3_finalize( sql_statement );
+                        }
+                        else
+                        {
+                            NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
                         }
                     }
                 }
@@ -1581,7 +1609,7 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
     return YES;
 }
 
-- (BOOL) importFromCSV:(NSString *)filename toDatabase:(NSString *)db_file
+- (BOOL) importFromCSV:(NSString *)filename toDatabase:(NSString *)db_file userDatabase:(NSString *)user_file
 {
     FILE *	file = fopen( [filename UTF8String], "r" );
     if ( NULL == file )
@@ -1601,7 +1629,17 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
     sqlDatabaseRef = [self createDatabase:db_file];
     if (NULL == sqlDatabaseRef)
         return NO;
-
+    
+    if (NULL != user_file)
+    {
+        UserDatabase * user = [[UserDatabase alloc] init];
+        sqlite3 * user_db = [user createDatabase:user_file];
+        if (NULL != user_db)
+        {
+            sqlite3_close(user_db);
+        }
+    }
+    
     NSUInteger      column = 0;
     BOOL            endoffile = NO;
     MyData *        mydata = nil;
@@ -1752,8 +1790,8 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                     
                     sqlite3_stmt *	sql_statement = nil;
                     // does not exist, add new
-                    const char * sql_hard = "insert into harddrinks (name, ingredients, instructions, shopping, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    const char * sql_soft = "insert into softdrinks (name, ingredients, instructions, shopping, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const char * sql_hard = "insert into harddrinks (name, ingredients, instructions, shopping, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id, created, modified) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const char * sql_soft = "insert into softdrinks (name, ingredients, instructions, shopping, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id, created, modified) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     if (sqlite3_prepare_v2( sqlDatabaseRef, alcoholic ? sql_hard : sql_soft, -1, &sql_statement, NULL ) != SQLITE_OK)
                     {
                         NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
@@ -1762,10 +1800,10 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                     int index = 1;
                     NSError * error;
                     
-                    sqlite3_bind_text( sql_statement, index++, [mydata.name UTF8String],  -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text( sql_statement, index++, [ingredients UTF8String],  -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text( sql_statement, index++, [mydata.instr UTF8String],  -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text( sql_statement, index++, [itemString UTF8String],  -1, SQLITE_TRANSIENT);
+                    sqlite3_bind_text(sql_statement, index++, [mydata.name UTF8String],  -1, SQLITE_TRANSIENT);
+                    sqlite3_bind_text(sql_statement, index++, [ingredients UTF8String],  -1, SQLITE_TRANSIENT);
+                    sqlite3_bind_text(sql_statement, index++, [mydata.instr UTF8String],  -1, SQLITE_TRANSIENT);
+                    sqlite3_bind_text(sql_statement, index++, [itemString UTF8String],  -1, SQLITE_TRANSIENT);
                     
                     NSData * data = [NSKeyedArchiver archivedDataWithRootObject:itemArray requiringSecureCoding:NO error:&error];
                     if (NULL == data)
@@ -1777,11 +1815,13 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                     sqlite3_bind_blob(sql_statement, index++, [data bytes], (int)[data length], SQLITE_STATIC);
                     sqlite3_bind_int( sql_statement, index++, (int)[itemArray count] );
                     
-                    sqlite3_bind_int( sql_statement, index++, enabled );
-                    sqlite3_bind_int64( sql_statement, index++, category_id );
-                    sqlite3_bind_int64( sql_statement, index++, glass_id );
-                    sqlite3_bind_int( sql_statement, index++, 0 );
-                    sqlite3_bind_int64( sql_statement, index++, 0 );
+                    sqlite3_bind_int(sql_statement, index++, enabled);
+                    sqlite3_bind_int64(sql_statement, index++, category_id);
+                    sqlite3_bind_int64(sql_statement, index++, glass_id);
+                    sqlite3_bind_int(sql_statement, index++, 0);
+                    sqlite3_bind_int64(sql_statement, index++, 0);
+                    sqlite3_bind_int64(sql_statement, index++, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                    sqlite3_bind_int64(sql_statement, index++, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
                     
                     //execute
                     int success = sqlite3_step(sql_statement);
@@ -1940,11 +1980,12 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
             if ( count > 0 )
             {
                 sqlite3_stmt *	sql_statement = nil;
-                const char * sql = "UPDATE glasses SET count=? WHERE grecord_id=?";
+                const char * sql = "UPDATE glasses SET count=?, modified=? WHERE grecord_id=?";
                 if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
                 {
                     sqlite3_bind_int64( sql_statement, 1, count );
-                    sqlite3_bind_int64( sql_statement, 2, rec_id );
+                    sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                    sqlite3_bind_int64( sql_statement, 3, rec_id );
                     if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
                     {
                         // Error...
@@ -1952,6 +1993,10 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                         
                     }
                     sqlite3_finalize( sql_statement );
+                }
+                else
+                {
+                    NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
                 }
             }
         }
@@ -1982,11 +2027,12 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
             if ( count > 0 )
             {
                 sqlite3_stmt *	sql_statement = nil;
-                const char * sql = "UPDATE categories SET count=? WHERE crecord_id=?";
+                const char * sql = "UPDATE categories SET count=?, modified=? WHERE crecord_id=?";
                 if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) == SQLITE_OK)
                 {
                     sqlite3_bind_int64( sql_statement, 1, count );
-                    sqlite3_bind_int64( sql_statement, 2, rec_id );
+                    sqlite3_bind_int64(sql_statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+                    sqlite3_bind_int64( sql_statement, 3, rec_id );
                     if (SQLITE_ERROR == sqlite3_step( sql_statement ) )
                     {
                         // Error...
@@ -1994,6 +2040,10 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                         
                     }
                     sqlite3_finalize( sql_statement );
+                }
+                else
+                {
+                    NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
                 }
             }
         }
@@ -2100,5 +2150,3 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
  2015-01-03 19:36:17.815 shaker[61060:10640271] Category 11 (Cocoa)   count 33
 
  */
-
-

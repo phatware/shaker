@@ -28,24 +28,24 @@
     NSFileManager *	fileManager = [NSFileManager defaultManager];
     NSError *		error = nil;
     BOOL res = [fileManager fileExistsAtPath:self.databasename];
-//    if ( !res )
-//    {
-//        NSString *  documentsPath = [NSFileManager documentsPath];
-//        NSString *  name = [documentsPath stringByAppendingPathComponent:@"user.sql"];
-//        res = [fileManager fileExistsAtPath:name];
-//        if ( res )
-//        {
-//            res = [NSFileManager moveToShared:@"user.sql" error:&error];
-//            if ( res )
-//            {
-//                res = [fileManager fileExistsAtPath:self.databasename];
-//            }
-//            else
-//            {
-//                NSLog( @"Cant move from local to shared with message '%@'.", [error localizedDescription]);
-//            }
-//        }
-//    }
+    if ( !res )
+    {
+        NSString *  documentsPath = [NSFileManager documentsPath];
+        NSString *  name = [documentsPath stringByAppendingPathComponent:@"user.sql"];
+        res = [fileManager fileExistsAtPath:name];
+        if ( res )
+        {
+            res = [NSFileManager moveToShared:@"user.sql" error:&error];
+            if ( res )
+            {
+                res = [fileManager fileExistsAtPath:self.databasename];
+            }
+            else
+            {
+                NSLog( @"Cant move from local to shared with message '%@'.", [error localizedDescription]);
+            }
+        }
+    }
     if ( !res )
     {
         // The writable database does not exist, so copy the default to the appropriate location.
@@ -112,6 +112,37 @@
     return YES;
 }
 
+- (sqlite3 *) createDatabase:(NSString *)filename
+{
+    sqlite3 * pDb = NULL;
+    int rc = sqlite3_open_v2([filename UTF8String], &pDb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (SQLITE_OK == rc && pDb != NULL )
+    {
+        const char * userpreferences_tab = "CREATE TABLE userpreferences( record_id integer PRIMARY KEY NOT NULL, flags integer, created integer, modified integer );";
+        const char * userdata_tab = "CREATE TABLE userdata( record_id integer PRIMARY KEY NOT NULL, note text, rating integer, "
+                                    "favorite boolean, visible integer, photo blob, drawing blob, coctail_id integer, created integer, modified integer );";
+        
+        
+        rc = sqlite3_exec(pDb, userpreferences_tab, NULL, NULL, NULL);
+        if (SQLITE_OK != rc)
+            goto error;
+        rc = sqlite3_exec(pDb, userdata_tab, NULL, NULL, NULL);
+        if (SQLITE_OK != rc)
+            goto error;
+    }
+    else
+    {
+        NSLog( @"Error: failed to create a new database %s", sqlite3_errmsg( pDb ) );
+    }
+    return pDb;
+    
+error:
+    NSLog( @"Error: failed to create a new database %s", sqlite3_errmsg( pDb ) );
+    sqlite3_close(pDb);
+    return NULL;
+}
+
+
 - (void) dealloc
 {
     self.databasename = nil;
@@ -126,14 +157,16 @@
     sqlite3_stmt *	sql_statement = nil;
     
     // does not exist, add new
-    const char * sql = "INSERT INTO userdata (visible, coctail_id) VALUES (?, ?)";
+    const char * sql = "INSERT INTO userdata (visible, coctail_id, created, modified) VALUES (?, ?, ?, ?)";
     if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &sql_statement, NULL ) != SQLITE_OK)
     {
         NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
         return NO;
     }
-    sqlite3_bind_int( sql_statement, 1, 1 );
-    sqlite3_bind_int64( sql_statement, 2, coctail_id );
+    sqlite3_bind_int(sql_statement, 1, 1);
+    sqlite3_bind_int64(sql_statement, 2, coctail_id);
+    sqlite3_bind_int64(sql_statement, 3, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+    sqlite3_bind_int64(sql_statement, 4, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
     int success = sqlite3_step(sql_statement);
     
     record_id = (success != SQLITE_ERROR) ? sqlite3_last_insert_rowid( sqlDatabaseRef ) : 0;
@@ -170,6 +203,10 @@
             }
         }
         sqlite3_finalize( statement );
+    }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
     }
     return image;
 }
@@ -215,7 +252,15 @@
             }
 #endif //
         }
+        else
+        {
+            NSLog( @"Error: cannot find user record with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+        }
         sqlite3_finalize( statement );
+    }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
     }
     return (NSDictionary *)result;
 }
@@ -224,13 +269,52 @@
 {
     BOOL result = NO;
     sqlite3_stmt *	statement = NULL;
-    const char * sql = "UPDATE userdata SET note=?, rating=?, visible=? WHERE record_id=?";
+    const char * sql = "UPDATE userdata SET note=?, rating=?, visible=?, modified=? WHERE record_id=?";
     if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &statement, NULL ) == SQLITE_OK)
     {
-        sqlite3_bind_text( statement, 1, (note== nil) ? "" : [note UTF8String], -1, SQLITE_TRANSIENT);
-        sqlite3_bind_int( statement, 2, rating );
-        sqlite3_bind_int( statement, 3, visible ? 1 : 0 );
-        sqlite3_bind_int64( statement, 4, record_id );
+        sqlite3_bind_text(statement, 1, (note== nil) ? "" : [note UTF8String], -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(statement, 2, rating);
+        sqlite3_bind_int(statement, 3, visible ? 1 : 0);
+        sqlite3_bind_int64(statement, 4, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+        sqlite3_bind_int64(statement, 5, record_id );
+        if (SQLITE_ERROR == sqlite3_step( statement ) )
+        {
+            // Error...
+            NSLog( @"Error: failed to update userdata with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+        }
+        else
+        {
+            result = YES;
+        }
+        sqlite3_finalize( statement );
+    }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+    }
+    return result;
+}
+
+- (BOOL) updateUserPhoto:(NSData *)photo record:(sqlite3_int64)record_id
+{
+    BOOL result = NO;
+    sqlite3_stmt *	statement = NULL;
+    const char * sql = "UPDATE userdata SET photo=?, modified=? WHERE record_id=?";
+    if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &statement, NULL ) == SQLITE_OK)
+    {
+        if ( photo != nil )
+        {
+            if (sqlite3_bind_blob( statement, 1, [photo bytes], (int)[photo length], SQLITE_STATIC) != SQLITE_OK)
+            {
+                NSLog( @"Error: failed to add photo with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+            }
+        }
+        else
+        {
+            sqlite3_bind_blob( statement, 1, NULL, 0, SQLITE_STATIC);
+        }
+        sqlite3_bind_int64(statement, 2, (sqlite3_int64)(sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]));
+        sqlite3_bind_int64( statement, 3, record_id );
         if (SQLITE_ERROR == sqlite3_step( statement ) )
         {
             // Error...
@@ -242,37 +326,9 @@
         }
         sqlite3_finalize( statement );
     }
-    return result;
-}
-
-- (BOOL) updateUserPhoto:(NSData *)photo record:(sqlite3_int64)record_id
-{
-    BOOL result = NO;
-    sqlite3_stmt *	statement = NULL;
-    const char * sql = "UPDATE userdata SET photo=? WHERE record_id=?";
-    if (sqlite3_prepare_v2( sqlDatabaseRef, sql, -1, &statement, NULL ) == SQLITE_OK)
+    else
     {
-        if ( photo != nil )
-        {
-            if (sqlite3_bind_blob( statement, 1, [photo bytes], (int)[photo length], SQLITE_STATIC) == SQLITE_OK)
-            {
-            }
-        }
-        else
-        {
-            sqlite3_bind_blob( statement, 1, NULL, 0, SQLITE_STATIC);
-        }
-        sqlite3_bind_int64( statement, 2, record_id );
-        if (SQLITE_ERROR == sqlite3_step( statement ) )
-        {
-            // Error...
-            NSLog( @"Error: failed to update ingredients record with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
-        }
-        else
-        {
-            result = YES;
-        }
-        sqlite3_finalize( statement );
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
     }
     return result;
 }
@@ -282,7 +338,7 @@
 
 /*
 
- CREATE TABLE userpreferences( record_id integer PRIMARY KEY NOT NULL, flags integer );
- CREATE TABLE userdata( record_id integer PRIMARY KEY NOT NULL, note text, rating integer, favorite boolean, visible integer, photo blob, drawing blob, coctail_id integer );
+ CREATE TABLE userpreferences( record_id integer PRIMARY KEY NOT NULL, flags integer, created integer, modified integer );
+ CREATE TABLE userdata( record_id integer PRIMARY KEY NOT NULL, note text, rating integer, favorite boolean, visible integer, photo blob, drawing blob, coctail_id integer, created integer, modified integer );
 
 */

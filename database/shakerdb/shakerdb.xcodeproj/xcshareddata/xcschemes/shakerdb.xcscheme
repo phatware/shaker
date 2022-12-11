@@ -53,7 +53,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/stan/work/PhatWare/iOS/drinks.csv"
+            argument = "/Users/stan/work/new/shaker/database/drinks.csv"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

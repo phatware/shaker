@@ -51,7 +51,7 @@ typedef enum
 #endif // IMAGE_SUPPORT
 
 #ifdef IMPORT_FROM_CSV
-- (BOOL) importFromCSV:(nonnull NSString *)filename toDatabase:(nonnull NSString *)db_file;
+- (BOOL) importFromCSV:(nonnull NSString *)filename toDatabase:(nonnull NSString *)db_file userDatabase:(nullable NSString *)user_file;
 #endif
 
 - (void)sync;
