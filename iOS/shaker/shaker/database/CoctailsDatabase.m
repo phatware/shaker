@@ -253,7 +253,7 @@
     return selectedRecords;
 }
 
-- (NSArray *) getUnlockedRecordList:(BOOL)alcohol filter:(NSString *)filter addName:(BOOL)addName
+- (NSArray *) getUnlockedRecordList:(BOOL)alcohol filter:(NSString *)filter sort:(NSString *)sort addName:(BOOL)addName
 {
     sqlite3_int64 count = [self getUnlockedRecipeCount:alcohol];
     if (count < 1)
@@ -276,7 +276,8 @@
             strSQL = [strSQL stringByAppendingString:filter];
     }
     
-    strSQL = [strSQL stringByAppendingString:@" ORDER BY name ASC"];
+    strSQL = [strSQL stringByAppendingString:@" ORDER BY "];
+    strSQL = [strSQL stringByAppendingString:sort];
 
     sqlite3_stmt *	statement = NULL;
     if ( sqlite3_prepare_v2( sqlDatabaseRef, [strSQL UTF8String], -1, &statement, NULL) == SQLITE_OK )

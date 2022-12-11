@@ -182,20 +182,21 @@
 				F6D7B1D7293C2D2F00BCC446 /* BLE */,
 				F658BD8C292DB56300837D1F /* database */,
 				F658BD87292B04FD00837D1F /* utilities */,
-				F658BD762929F6AF00837D1F /* shaker.entitlements */,
-				F658BD752929F67100837D1F /* Info.plist */,
+				F658BD632929F3B400837D1F /* SwiftUIMapView */,
 				F658BD532929C5B700837D1F /* shakerApp.swift */,
 				F658BD552929C5B700837D1F /* ContentView.swift */,
 				F661648F294447D900228691 /* CoctailsView.swift */,
 				F6616491294470BD00228691 /* CoctailDetails.swift */,
 				F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */,
 				F6BCC41C29385191008E20F4 /* CollasibleSection.swift */,
-				F658BD572929C5B900837D1F /* Assets.xcassets */,
-				F658BD592929C5B900837D1F /* Preview Content */,
 				F658BD612929F31200837D1F /* MapContentView.swift */,
 				F658BD85292A1BBD00837D1F /* MapDetails.swift */,
 				F661648C294318C100228691 /* MapSearchView.swift */,
-				F658BD632929F3B400837D1F /* SwiftUIMapView */,
+				F658BD81292A005D00837D1F /* shaker-Bridging-Header.h */,
+				F658BD592929C5B900837D1F /* Preview Content */,
+				F658BD752929F67100837D1F /* Info.plist */,
+				F658BD762929F6AF00837D1F /* shaker.entitlements */,
+				F658BD572929C5B900837D1F /* Assets.xcassets */,
 			);
 			path = shaker;
 			sourceTree = "<group>";
@@ -220,7 +221,6 @@
 				F658BD6A2929F3B400837D1F /* MapAnnotationClusterView.swift */,
 				F658BD682929F3B400837D1F /* MapAnnotation.swift */,
 				F658BD6B2929F3B400837D1F /* MapAnnotationView.swift */,
-				F658BD81292A005D00837D1F /* shaker-Bridging-Header.h */,
 			);
 			path = SwiftUIMapView;
 			sourceTree = "<group>";
@@ -597,7 +597,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.phatware.shaker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "shaker/SwiftUIMapView/shaker-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "shaker/shaker-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -637,7 +637,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.phatware.shaker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "shaker/SwiftUIMapView/shaker-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "shaker/shaker-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

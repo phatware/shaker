@@ -102,35 +102,123 @@ struct CoctailsView: View
     @EnvironmentObject var modelData: ShakerModel
     
     @State private var searchText = ""
-    @State private var column = "name"
-    
+    @State private var searchin = SearchSelector.name
+    @State private var sortby = SortSelector.name
+    @State private var order = OrderSelector.decending
+    @State private var groupby = GroupSelector.none
+    @State private var showna = false
+
+    enum SortSelector: String, CaseIterable, Identifiable {
+        case name = "Title"
+        case rating = "Rating"
+        case update = "Update Date"
+        
+        var id: SortSelector { self }
+    }
+
+    enum GroupSelector: String, CaseIterable, Identifiable {
+        case none = "None"
+        case category = "Category"
+        case glass = "Glass Type"
+        
+        var id: GroupSelector { self }
+    }
+
+    enum OrderSelector: String, CaseIterable, Identifiable {
+        case ascending = "Ascending Order"
+        case decending = "Decending Order"
+        
+        var id: OrderSelector { self }
+    }
+
+    enum SearchSelector: String, CaseIterable, Identifiable {
+        case name = "Titles"
+        case instructions = "Instructions"
+        case ingredients = "Ingredients"
+        
+        var id: SearchSelector { self }
+    }
+
     private var filter: String {
+        let column : String
+        switch(searchin) {
+        case .name:
+            column = "name"
+            
+        case .instructions:
+            column = "instructions"
+            
+        case .ingredients:
+            column = "ingredients"
+        }
         return "\(column) LIKE '%\(searchText.sqlString)%'"
+    }
+    
+    private var sort: String {
+        let column1: String
+        let column2: String
+        switch(sortby) {
+        case .name:
+            column2 = "name"
+        case .rating:
+            column2 = "rating"
+        case .update:
+            column2 = "modified"
+        }
+        switch(groupby) {
+        case .none:
+            column1 = ""
+        case .category:
+            column1 = "category_id"
+        case .glass:
+            column1 = "glass_id"
+        }
+        // note: here the order is opposite because the order represents "switch to order..." menu
+        let o = order == OrderSelector.ascending ? "DESC" : "ASC"
+        if column1 != "" {
+            return "\(column1) ASC, \(column2) \(o)"
+        }
+        return "\(column2) \(o)"
     }
     
     private var alcoholic: [Int64] {
         if searchText.isEmpty {
-            return modelData.database.getUnlockedRecordList(true, filter: nil, addName: false) as? [Int64] ?? []
+            return modelData.database.getUnlockedRecordList(true, filter: nil, sort: self.sort, addName: false) as? [Int64] ?? []
         }
         else {
-            return modelData.database.getUnlockedRecordList(true, filter: self.filter, addName: false) as? [Int64] ?? []
+            return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: self.sort, addName: false) as? [Int64] ?? []
         }
     }
     private var non_alcoholic: [Int64] {
         if searchText.isEmpty {
-            return modelData.database.getUnlockedRecordList(false, filter: nil, addName: false) as? [Int64] ?? []
+            return modelData.database.getUnlockedRecordList(false, filter: nil, sort: self.sort, addName: false) as? [Int64] ?? []
         }
         else {
-            return modelData.database.getUnlockedRecordList(false, filter: self.filter, addName: false) as? [Int64] ?? []
+            return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: self.sort, addName: false) as? [Int64] ?? []
         }
     }
-    
+        
     var body: some View {
         NavigationView {
             VStack {
                 List {
-                    ForEach(alcoholic, id: \.self) { rec_id in
-                        CoctailRow(rec_id: rec_id)
+                    // TODO: finish group by...
+                    if showna {
+                        CollapsibleSection(title: "Alcoholic Beverages", isExpanded: true) {
+                            ForEach(alcoholic, id: \.self) { rec_id in
+                                RecipeRow(rec_id: rec_id)
+                            }
+                        }
+                        CollapsibleSection(title: "Alcohol-free Beverages", isExpanded: true) {
+                            ForEach(non_alcoholic, id: \.self) { rec_id in
+                                RecipeRow(rec_id: rec_id)
+                            }
+                        }
+                    }
+                    else {
+                        ForEach(alcoholic, id: \.self) { rec_id in
+                            CoctailRow(rec_id: rec_id)
+                        }
                     }
                 }
                 .searchable(text: $searchText, placement: .navigationBarDrawer) {
@@ -142,13 +230,46 @@ struct CoctailsView: View
             }
             .navigationTitle("Coctails")
             .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button(action: {
-                        print("button pressed")
-                        
-                    }) {
-                        Image(systemName: "gear")
-                            // .renderingMode(Image.TemplateRenderingMode?.init(Image.TemplateRenderingMode.original))
+                ToolbarItem {
+                    Menu {
+                        Menu {
+                            Picker("Sort By", selection: $sortby) {
+                                ForEach(SortSelector.allCases) { ss in
+                                    Text(ss.rawValue).tag(ss)
+                                }
+                            }
+                            Button {
+                                order = order == OrderSelector.ascending ? OrderSelector.decending : OrderSelector.ascending
+                            } label: {
+                                let imagename = order == OrderSelector.ascending ? "arrowtriangle.up.fill" : "arrowtriangle.down.fill"
+                                Label(order.rawValue, systemImage: imagename)
+                            }
+                        } label: {
+                            Label("Sory by", systemImage: "line.3.horizontal.decrease.circle")
+                        }
+                        Menu {
+                            Picker("Group By", selection: $groupby) {
+                                ForEach(GroupSelector.allCases) { gs in
+                                    Text(gs.rawValue).tag(gs)
+                                }
+                            }
+                        } label: {
+                            Label("Group by", systemImage: "rectangle.3.group")
+                        }
+                        Menu {
+                            Picker("Search in", selection: $searchin) {
+                                ForEach(SearchSelector.allCases) { gs in
+                                    Text(gs.rawValue).tag(gs)
+                                }
+                            }
+                        } label: {
+                            Label("Search in", systemImage: "magnifyingglass")
+                        }
+                        Toggle(isOn: $showna) {
+                            Label("Alcohol-free Recipes", systemImage: "drop.degreesign.slash")
+                        }
+                    } label: {
+                        Label("View Settings", systemImage: "slider.horizontal.3")
                     }
                 }
             }

@@ -16,16 +16,17 @@ struct CollapsibleSection<Content: View>: View
     private let content: Content
     private let alignment: HorizontalAlignment
     private let spacing: CGFloat
-    @State private var isExpanded = false
+    @State private var isExpanded: Bool
     
-    init(title: String, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 12, @ViewBuilder content: () -> Content)
+    init(title: String, isExpanded: Bool, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 12, @ViewBuilder content: () -> Content)
     {
         self.title = title
         self.alignment = alignment
         self.spacing = spacing
+        _isExpanded = /*State<Bool>*/.init(initialValue: isExpanded)
         self.content = content()
     }
-    
+        
     var body: some View
     {
         // TODO: fix colors

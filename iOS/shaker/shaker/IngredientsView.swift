@@ -88,10 +88,10 @@ struct FilteredRecipesView: View
     }
     
     private var alcoholic: [Int64] {
-        return modelData.database.getUnlockedRecordList(true, filter: self.filter, addName: false) as? [Int64] ?? []
+        return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: "name ASC", addName: false) as? [Int64] ?? []
     }
     private var non_alcoholic: [Int64] {
-        return modelData.database.getUnlockedRecordList(false, filter: self.filter, addName: false) as? [Int64] ?? []
+        return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: "name ASC", addName: false) as? [Int64] ?? []
     }
     
     var body: some View {
@@ -196,7 +196,7 @@ struct IngredientsView: View
                 List {
                     ForEach(categories, id: \.self) { category in
                         
-                        CollapsibleSection(title: category.name) {
+                        CollapsibleSection(title: category.name, isExpanded: false) {
                             
                             ForEach(category.ingredients, id: \.self) { ing in
                                 IngredientRow(ing: ing)
