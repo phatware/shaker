@@ -253,16 +253,20 @@
     return selectedRecords;
 }
 
-- (NSArray *) getUnlockedRecordList:(BOOL)alcohol filter:(NSString *)filter sort:(NSString *)sort addName:(BOOL)addName
+- (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *) getUnlockedRecordList:(BOOL)alcohol filter:(NSString *)filter sort:(NSString *)sort group:(NSString *)group
 {
     sqlite3_int64 count = [self getUnlockedRecipeCount:alcohol];
     if (count < 1)
-        return [NSArray array];
-    NSMutableArray * array = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)count];
+        return [NSDictionary dictionary];
     
-    NSString *	strSQL = [NSString stringWithFormat:@"SELECT record_id%@ FROM %@",
-                          (addName) ? @", name" : @"",
-                          (alcohol ? @"harddrinks" : @"softdrinks")];
+    // build SQL statment
+    NSString *	strSQL = @"SELECT record_id";
+    if (nil != group)
+    {
+        strSQL = [strSQL stringByAppendingString:@", "];
+        strSQL = [strSQL stringByAppendingString:group];
+    }
+    strSQL = [strSQL stringByAppendingFormat:@" FROM %@", (alcohol ? @"harddrinks" : @"softdrinks")];
     if ( (! self.unlocked) || filter != nil )
     {
         strSQL = [strSQL stringByAppendingString:@" WHERE "];
@@ -277,39 +281,58 @@
     }
     
     strSQL = [strSQL stringByAppendingString:@" ORDER BY "];
+    if (nil != group)
+    {
+        strSQL = [strSQL stringByAppendingString:group];
+        strSQL = [strSQL stringByAppendingString:@" ASC, "];
+    }
     strSQL = [strSQL stringByAppendingString:sort];
 
-    sqlite3_stmt *	statement = NULL;
-    if ( sqlite3_prepare_v2( sqlDatabaseRef, [strSQL UTF8String], -1, &statement, NULL) == SQLITE_OK )
+
+    NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
+    @autoreleasepool
     {
-        while ( sqlite3_step(statement) == SQLITE_ROW )
+        NSMutableArray * array = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)count];
+        sqlite3_int64 group_id = -1;
+        
+        sqlite3_stmt *	statement = NULL;
+        if ( sqlite3_prepare_v2( sqlDatabaseRef, [strSQL UTF8String], -1, &statement, NULL) == SQLITE_OK )
         {
-            sqlite3_int64 record_id = sqlite3_column_int64( statement, 0 );
-            if ( record_id > 0 )
+            while ( sqlite3_step(statement) == SQLITE_ROW )
             {
-                if ( addName )
-                {
-                    const unsigned char * name = sqlite3_column_text( statement, 1 );
-                    if ( name != NULL )
-                    {
-                        [array addObject:@{ @"id" : [NSNumber numberWithLongLong:record_id],
-                                            @"name" : [NSString stringWithUTF8String:(char *)name] }];
-                    }
-                }
-                else
+                int index = 0;
+                sqlite3_int64 record_id = sqlite3_column_int64(statement, index++);
+                if ( record_id > 0)
                 {
                     [array addObject:[NSNumber numberWithLongLong:record_id]];
+                    if (nil != group)
+                    {
+                        sqlite3_int64 gid = sqlite3_column_int64(statement, index++);
+                        if (gid != group_id)
+                        {
+                            if (array.count > 0 && group_id != -1)
+                            {
+                                result[@(group_id)] = array;
+                                array = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)count];
+                            }
+                            group_id = gid;
+                        }
+                    }
                 }
             }
+            if (array.count > 0)
+            {
+                result[@(group_id)] = array;
+            }
         }
+        else
+        {
+            NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+            return nil;
+        }
+        sqlite3_finalize( statement );
     }
-    else
-    {
-        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
-        return nil;
-    }
-    sqlite3_finalize( statement );
-    return (NSArray *)array;
+    return (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *)result;
 }
 
 - (sqlite3_int64) getUnlockedRecipeCount:(BOOL)alcohol
@@ -601,7 +624,53 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
         return nil;
     }
     sqlite3_finalize( statement );
-    return (NSArray *)array;
+    return (NSArray <NSDictionary *> *)array;
+}
+
+- (NSString *) categoryName:(sqlite3_int64)cid
+{
+    const char * sql = [[NSString stringWithFormat:@"SELECT category FROM categories WHERE crecord_id = %lld", cid] UTF8String];
+    NSString * name = @"";
+    sqlite3_stmt *    statement = NULL;
+    if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
+    {
+        if ( sqlite3_step(statement) == SQLITE_ROW )
+        {
+            const unsigned char * n = sqlite3_column_text( statement, 0 );
+            if ( NULL != n )
+                name = [NSString stringWithUTF8String:(char *)n];
+        }
+    }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+        return nil;
+    }
+    sqlite3_finalize( statement );
+    return name;
+}
+// CREATE TABLE glasses( grecord_id integer PRIMARY KEY NOT NULL, glass text, count integer );
+- (NSString *) glassName:(sqlite3_int64)gid
+{
+    const char * sql = [[NSString stringWithFormat:@"SELECT glass FROM glasses WHERE grecord_id = %lld", gid] UTF8String];
+    NSString * name = @"";
+    sqlite3_stmt *    statement = NULL;
+    if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
+    {
+        if ( sqlite3_step(statement) == SQLITE_ROW )
+        {
+            const unsigned char * n = sqlite3_column_text( statement, 0 );
+            if ( NULL != n )
+                name = [NSString stringWithUTF8String:(char *)n];
+        }
+    }
+    else
+    {
+        NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
+        return nil;
+    }
+    sqlite3_finalize( statement );
+    return name;
 }
 
 - (sqlite3_int64) findRandomRecipe

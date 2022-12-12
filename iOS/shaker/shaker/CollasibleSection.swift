@@ -18,15 +18,15 @@ struct CollapsibleSection<Content: View>: View
     private let spacing: CGFloat
     @State private var isExpanded: Bool
     
-    init(title: String, isExpanded: Bool, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 12, @ViewBuilder content: () -> Content)
+    init(title: String, setExpanded: Bool, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 2, @ViewBuilder content: () -> Content)
     {
         self.title = title
         self.alignment = alignment
         self.spacing = spacing
-        _isExpanded = /*State<Bool>*/.init(initialValue: isExpanded)
+        _isExpanded = /*State<Bool>*/.init(initialValue: setExpanded)
         self.content = content()
     }
-        
+
     var body: some View
     {
         // TODO: fix colors
@@ -58,6 +58,26 @@ struct CollapsibleSection<Content: View>: View
                     .transition(.slide)
                     // .clipped()
             }
+            else {
+//                VStack(spacing: self.spacing) {
+//                    EmptyView()
+//                }
+//                .listRowInsets(EdgeInsets(
+//                    top: 0,
+//                    leading: 0,
+//                    bottom: 0,
+//                    trailing: 0))
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .expandCollapse)) { notofication in
+            // If you are passing an object, this can be "notification in"
+            // print("\(notofication)")
+            
+            if let val = notofication.object as? Bool {
+                isExpanded = val
+            }
+            
+            // Do something here as a result of the notification
         }
     }
 }

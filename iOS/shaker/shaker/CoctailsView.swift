@@ -139,7 +139,10 @@ struct CoctailsView: View
         var id: SearchSelector { self }
     }
 
-    private var filter: String {
+    private var filter: String? {
+        if searchText.isEmpty {
+            return nil
+        }
         let column : String
         switch(searchin) {
         case .name:
@@ -155,71 +158,93 @@ struct CoctailsView: View
     }
     
     private var sort: String {
-        let column1: String
-        let column2: String
+        let col: String
         switch(sortby) {
         case .name:
-            column2 = "name"
+            col = "name"
         case .rating:
-            column2 = "rating"
+            col = "rating"
         case .update:
-            column2 = "modified"
+            col = "modified"
         }
-        switch(groupby) {
-        case .none:
-            column1 = ""
-        case .category:
-            column1 = "category_id"
-        case .glass:
-            column1 = "glass_id"
-        }
-        // note: here the order is opposite because the order represents "switch to order..." menu
         let o = order == OrderSelector.ascending ? "DESC" : "ASC"
-        if column1 != "" {
-            return "\(column1) ASC, \(column2) \(o)"
-        }
-        return "\(column2) \(o)"
+        return "\(col) \(o)"
     }
     
-    private var alcoholic: [Int64] {
-        if searchText.isEmpty {
-            return modelData.database.getUnlockedRecordList(true, filter: nil, sort: self.sort, addName: false) as? [Int64] ?? []
+    private var alcoholic: [Int64:[Int64]] {
+        var group: String? = nil
+        switch(groupby) {
+        case .none:
+            group = nil
+        case .category:
+            group = "category_id"
+        case .glass:
+            group = "glass_id"
         }
-        else {
-            return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: self.sort, addName: false) as? [Int64] ?? []
-        }
+        return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: self.sort, group: group) as? [Int64:[Int64]] ?? [:]
     }
-    private var non_alcoholic: [Int64] {
-        if searchText.isEmpty {
-            return modelData.database.getUnlockedRecordList(false, filter: nil, sort: self.sort, addName: false) as? [Int64] ?? []
+    private var non_alcoholic: [Int64:[Int64]] {
+        var group: String? = nil
+        switch(groupby) {
+        case .none:
+            group = nil
+        case .category:
+            group = "category_id"
+        case .glass:
+            group = "glass_id"
         }
-        else {
-            return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: self.sort, addName: false) as? [Int64] ?? []
-        }
+        return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: self.sort, group: group) as? [Int64:[Int64]] ?? [:]
     }
-        
+    
     var body: some View {
         NavigationView {
             VStack {
                 List {
+                    switch(self.groupby) {
+                    case .none:
+                        if showna {
+                            CollapsibleSection(title: "Alcoholic Beverages", setExpanded: true) {
+                                ForEach(alcoholic[-1]!, id: \.self) { rec_id in
+                                    RecipeRow(rec_id: rec_id)
+                                }
+                            }
+                            CollapsibleSection(title: "Alcohol-free Beverages", setExpanded: true) {
+                                ForEach(non_alcoholic[-1]!, id: \.self) { rec_id in
+                                    RecipeRow(rec_id: rec_id)
+                                }
+                            }
+                        }
+                        else {
+                            ForEach(alcoholic[-1]!, id: \.self) { rec_id in
+                                CoctailRow(rec_id: rec_id)
+                            }
+                        }
+                        
+                    case .category:
+                        let keys = alcoholic.keys.sorted()
+                        ForEach(keys, id: \.self) { key in
+                            let cat = modelData.database.categoryName(key)
+                            CollapsibleSection(title: cat, setExpanded: true) {
+                                ForEach(alcoholic[key]!, id: \.self) { rec_id in
+                                    RecipeRow(rec_id: rec_id)
+                                }
+                            }
+                        }
+                        
+                    case .glass:
+                        let keys = alcoholic.keys.sorted()
+                        ForEach(keys, id: \.self) { key in
+                            let glass = modelData.database.glassName(key)
+                            CollapsibleSection(title: glass, setExpanded: true) {
+                                ForEach(alcoholic[key]!, id: \.self) { rec_id in
+                                    RecipeRow(rec_id: rec_id)
+                                }
+                            }
+                        }
+                    }
+                    
+                    
                     // TODO: finish group by...
-                    if showna {
-                        CollapsibleSection(title: "Alcoholic Beverages", isExpanded: true) {
-                            ForEach(alcoholic, id: \.self) { rec_id in
-                                RecipeRow(rec_id: rec_id)
-                            }
-                        }
-                        CollapsibleSection(title: "Alcohol-free Beverages", isExpanded: true) {
-                            ForEach(non_alcoholic, id: \.self) { rec_id in
-                                RecipeRow(rec_id: rec_id)
-                            }
-                        }
-                    }
-                    else {
-                        ForEach(alcoholic, id: \.self) { rec_id in
-                            CoctailRow(rec_id: rec_id)
-                        }
-                    }
                 }
                 .searchable(text: $searchText, placement: .navigationBarDrawer) {
                     //                ForEach(SearchScope.allCases, id: \.self) { scope in
@@ -253,6 +278,18 @@ struct CoctailsView: View
                                     Text(gs.rawValue).tag(gs)
                                 }
                             }
+                            if self.groupby != .none {
+                                Button {
+                                    NotificationCenter.default.post(name: .expandCollapse, object: true)
+                                } label: {
+                                    Label("Expand All", systemImage: "rectangle.expand.vertical")
+                                }
+                                Button {
+                                    NotificationCenter.default.post(name: .expandCollapse, object: false)
+                                } label: {
+                                    Label("Collapse All", systemImage: "rectangle.compress.vertical")
+                                }
+                            }
                         } label: {
                             Label("Group by", systemImage: "rectangle.3.group")
                         }
@@ -275,6 +312,10 @@ struct CoctailsView: View
             }
         }
     }
+}
+
+extension Notification.Name {
+    static let expandCollapse = Notification.Name("expand_collapse_coctail_list")
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

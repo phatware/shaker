@@ -110,7 +110,7 @@ extension WatchConnect: WCSessionDelegate
                 
             case kShakerSyncDatabase :
                 // TODO: workd only from watch to phone on sym, need to test on device
-                let arr = self.database.getUnlockedRecordList(true, filter: nil, sort: "name ASC", addName: false) ?? []
+                let arr = self.database.getUnlockedRecordList(true, filter: nil, group: nil, sort: "name ASC")[-1] ?? []
                 // ??? self.sendMessage(message: ["event" : kShakerSyncDatabase, "unlocked" : arr])
                 replyHandler(["event" : kShakerSyncDatabase, "unlocked" : arr])
                 return
@@ -234,7 +234,7 @@ extension WatchConnect: WCSessionDelegate
                 
             case kShakerSyncDatabase :
                 // TODO: workd only from watch to phone on sym, need to test on device
-                let arr = self.database.getUnlockedRecordList(true, filter: nil, sort: "name ASC", addName: false) ?? []
+                let arr = self.database.getUnlockedRecordList(true, filter: nil, sort: "name ASC", group: nil)[-1] ?? []
                 // ??? self.sendMessage(message: ["event" : kShakerSyncDatabase, "unlocked" : arr])
                 replyHandler(["event" : kShakerSyncDatabase, "unlocked" : arr])
                 return

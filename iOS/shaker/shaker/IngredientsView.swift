@@ -88,10 +88,10 @@ struct FilteredRecipesView: View
     }
     
     private var alcoholic: [Int64] {
-        return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: "name ASC", addName: false) as? [Int64] ?? []
+        return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: "name ASC", group: nil)[-1] as? [Int64] ?? []
     }
     private var non_alcoholic: [Int64] {
-        return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: "name ASC", addName: false) as? [Int64] ?? []
+        return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: "name ASC", group: nil)[-1] as? [Int64] ?? []
     }
     
     var body: some View {
@@ -165,6 +165,7 @@ struct IngredientRow: View
 struct IngredientsView: View
 {
     @EnvironmentObject var modelData: ShakerModel
+    @State private var expandAll = false
     
     private var categories: [IngredientCategory] {
         let data = modelData.database.inredientsCategories() as? [NSDictionary] ?? []
@@ -195,9 +196,7 @@ struct IngredientsView: View
             NavigationView {
                 List {
                     ForEach(categories, id: \.self) { category in
-                        
-                        CollapsibleSection(title: category.name, isExpanded: false) {
-                            
+                        CollapsibleSection(title: category.name, setExpanded: expandAll) {
                             ForEach(category.ingredients, id: \.self) { ing in
                                 IngredientRow(ing: ing)
                             }
