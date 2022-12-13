@@ -18,7 +18,7 @@ struct CollapsibleSection<Content: View>: View
     private let spacing: CGFloat
     @State private var isExpanded: Bool
     
-    init(title: String, setExpanded: Bool, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 2, @ViewBuilder content: () -> Content)
+    init(title: String, setExpanded: Bool, alignment: HorizontalAlignment = .leading, spacing: CGFloat = 10, @ViewBuilder content: () -> Content)
     {
         self.title = title
         self.alignment = alignment

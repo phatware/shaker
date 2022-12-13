@@ -97,18 +97,20 @@ struct FilteredRecipesView: View
     var body: some View {
         VStack {
             List {
-                if alcoholic.count > 0 {
+                let alco = alcoholic
+                let free = non_alcoholic
+                if alco.count > 0 {
                     Section {
-                        ForEach(alcoholic, id: \.self) { rec_id in
+                        ForEach(alco, id: \.self) { rec_id in
                             RecipeRow(rec_id: rec_id)
                         }
                     } header: {
                         CoctailSectionHeader(title: "Alcoholic Beverages")
                     }
                 }
-                if non_alcoholic.count > 0 {
+                if free.count > 0 {
                     Section {
-                        ForEach(non_alcoholic, id: \.self) { rec_id in
+                        ForEach(free, id: \.self) { rec_id in
                             RecipeRow(rec_id: rec_id)
                         }
                     } header: {
@@ -154,6 +156,7 @@ struct IngredientRow: View
                     .foregroundColor(.gray)
                     .padding(.top, -6)
             }
+            .searchCompletion(ing.name)
         }
         .listRowSeparator(.visible)
     }
@@ -166,7 +169,29 @@ struct IngredientsView: View
 {
     @EnvironmentObject var modelData: ShakerModel
     @State private var expandAll = false
+    @State private var order = OrderSelector.decending
+    @State private var searchText = ""
+    @State private var showall = true
     
+    enum OrderSelector: String, CaseIterable, Identifiable {
+        case ascending = "Ascending Order"
+        case decending = "Decending Order"
+        
+        var id: OrderSelector { self }
+    }
+    
+    private var filter: String? {
+        if self.searchText.isEmpty {
+            return nil
+        }
+        return "item LIKE '%\(searchText.sqlString)%'"
+    }
+
+    private var sort: String {
+        let o = order == OrderSelector.ascending ? "DESC" : "ASC"
+        return "item \(o)"
+    }
+
     private var categories: [IngredientCategory] {
         let data = modelData.database.inredientsCategories() as? [NSDictionary] ?? []
         var result: [IngredientCategory] = []
@@ -175,9 +200,9 @@ struct IngredientsView: View
                                         rec_id: category["id"] as? Int64 ?? 0)
             
             if let subitems = modelData.database.inredients(forCategory: ic.rec_id,
-                                                            showall: true,
-                                                            filter: nil,
-                                                            sort: nil) as? [NSDictionary] {
+                                                            showall: showall,
+                                                            filter: self.filter,
+                                                            sort: self.sort) as? [NSDictionary] {
                 for sitem in subitems {
                     let i = Ingredient(name: sitem["name"] as? String ?? "",
                                        rec_id: sitem["id"] as? Int64 ?? 0,
@@ -186,17 +211,19 @@ struct IngredientsView: View
                     ic.ingredients.append(i)
                 }
             }
-            result.append(ic)
+            if ic.ingredients.count > 0 {
+                result.append(ic)
+            }
         }
         return result
     }
     
     var body: some View {
-        VStack {
-            NavigationView {
+        NavigationView {
+            VStack {
                 List {
                     ForEach(categories, id: \.self) { category in
-                        CollapsibleSection(title: category.name, setExpanded: expandAll) {
+                        CollapsibleSection(title: category.name, setExpanded: true) {
                             ForEach(category.ingredients, id: \.self) { ing in
                                 IngredientRow(ing: ing)
                             }
@@ -204,8 +231,40 @@ struct IngredientsView: View
                     }
                 }
                 // .listStyle(InsetGroupedListStyle())
-                .navigationTitle("Ingredients")
+                .searchable(text: $searchText, placement: .navigationBarDrawer) {
+                    //                ForEach(SearchScope.allCases, id: \.self) { scope in
+                    //                    Text(scope.rawValue.capitalized)
+                    //                }
+                }
                 .listStyle(InsetListStyle())
+            }
+            .navigationTitle("Ingredients")
+            .toolbar {
+                ToolbarItem {
+                    Menu {
+                        Button {
+                            order = order == OrderSelector.ascending ? OrderSelector.decending : OrderSelector.ascending
+                        } label: {
+                            let imagename = order == OrderSelector.ascending ? "arrowtriangle.up.fill" : "arrowtriangle.down.fill"
+                            Label(order.rawValue, systemImage: imagename)
+                        }
+                        Button {
+                            NotificationCenter.default.post(name: .expandCollapse, object: true)
+                        } label: {
+                            Label("Expand All", systemImage: "rectangle.expand.vertical")
+                        }
+                        Button {
+                            NotificationCenter.default.post(name: .expandCollapse, object: false)
+                        } label: {
+                            Label("Collapse All", systemImage: "rectangle.compress.vertical")
+                        }
+                        Toggle(isOn: $showall) {
+                            Label("Show Disabled Igredients", systemImage: "eye.slash")
+                        }
+                    } label: {
+                        Label("View Settings", systemImage: "slider.horizontal.3")
+                    }
+                }
             }
         }
     }

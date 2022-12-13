@@ -78,7 +78,6 @@ struct CoctailRow: View
                         .foregroundColor(.black)
                         .font(.footnote)
                 }
-                .searchCompletion(coctail.name)
                 Spacer()
                 if coctail.rating == 0 {
                     Text("0☆")
@@ -91,6 +90,7 @@ struct CoctailRow: View
                 }
             }
         }
+        .searchCompletion(coctail.name)
     }
 }
 
@@ -200,11 +200,12 @@ struct CoctailsView: View
         NavigationView {
             VStack {
                 List {
+                    let drinks = alcoholic
                     switch(self.groupby) {
                     case .none:
                         if showna {
                             CollapsibleSection(title: "Alcoholic Beverages", setExpanded: true) {
-                                ForEach(alcoholic[-1]!, id: \.self) { rec_id in
+                                ForEach(drinks[-1]!, id: \.self) { rec_id in
                                     RecipeRow(rec_id: rec_id)
                                 }
                             }
@@ -215,36 +216,33 @@ struct CoctailsView: View
                             }
                         }
                         else {
-                            ForEach(alcoholic[-1]!, id: \.self) { rec_id in
+                            ForEach(drinks[-1]!, id: \.self) { rec_id in
                                 CoctailRow(rec_id: rec_id)
                             }
                         }
                         
                     case .category:
-                        let keys = alcoholic.keys.sorted()
+                        let keys = drinks.keys.sorted()
                         ForEach(keys, id: \.self) { key in
                             let cat = modelData.database.categoryName(key)
                             CollapsibleSection(title: cat, setExpanded: true) {
-                                ForEach(alcoholic[key]!, id: \.self) { rec_id in
+                                ForEach(drinks[key]!, id: \.self) { rec_id in
                                     RecipeRow(rec_id: rec_id)
                                 }
                             }
                         }
                         
                     case .glass:
-                        let keys = alcoholic.keys.sorted()
+                        let keys = drinks.keys.sorted()
                         ForEach(keys, id: \.self) { key in
                             let glass = modelData.database.glassName(key)
                             CollapsibleSection(title: glass, setExpanded: true) {
-                                ForEach(alcoholic[key]!, id: \.self) { rec_id in
+                                ForEach(drinks[key]!, id: \.self) { rec_id in
                                     RecipeRow(rec_id: rec_id)
                                 }
                             }
                         }
                     }
-                    
-                    
-                    // TODO: finish group by...
                 }
                 .searchable(text: $searchText, placement: .navigationBarDrawer) {
                     //                ForEach(SearchScope.allCases, id: \.self) { scope in

@@ -655,7 +655,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
     const char * sql = [[NSString stringWithFormat:@"SELECT glass FROM glasses WHERE grecord_id = %lld", gid] UTF8String];
     NSString * name = @"";
     sqlite3_stmt *    statement = NULL;
-    if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
+    if ( sqlite3_prepare_v2(sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
     {
         if ( sqlite3_step(statement) == SQLITE_ROW )
         {
