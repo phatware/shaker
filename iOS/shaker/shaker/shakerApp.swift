@@ -11,9 +11,7 @@ import SwiftUI
 struct shakerApp: App {
     
     @StateObject private var modelData = ShakerModel()
-    
-    
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()

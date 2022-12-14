@@ -33,6 +33,10 @@
 		F661648D294318C100228691 /* MapSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F661648C294318C100228691 /* MapSearchView.swift */; };
 		F6616490294447D900228691 /* CoctailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F661648F294447D900228691 /* CoctailsView.swift */; };
 		F6616492294470BD00228691 /* CoctailDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6616491294470BD00228691 /* CoctailDetails.swift */; };
+		F66164982949660900228691 /* PlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66164972949660900228691 /* PlayView.swift */; };
+		F661649A2949661C00228691 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66164992949661C00228691 /* AccountView.swift */; };
+		F661649C2949AB8400228691 /* BLECentralDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F661649B2949AB8400228691 /* BLECentralDelegate.swift */; };
+		F661649E2949ABC300228691 /* BLEPeripheralDelegatge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F661649D2949ABC300228691 /* BLEPeripheralDelegatge.swift */; };
 		F6BCC3FB2930AAFC008E20F4 /* IngredientsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */; };
 		F6BCC3FF29371BD0008E20F4 /* ShakerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC3FE29371BD0008E20F4 /* ShakerModel.swift */; };
 		F6BCC40F29372DF7008E20F4 /* Indexable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40129372DF7008E20F4 /* Indexable.swift */; };
@@ -109,6 +113,10 @@
 		F661648E29442A4800228691 /* calc.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = calc.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		F661648F294447D900228691 /* CoctailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoctailsView.swift; sourceTree = "<group>"; };
 		F6616491294470BD00228691 /* CoctailDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoctailDetails.swift; sourceTree = "<group>"; };
+		F66164972949660900228691 /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayView.swift; sourceTree = "<group>"; };
+		F66164992949661C00228691 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
+		F661649B2949AB8400228691 /* BLECentralDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLECentralDelegate.swift; sourceTree = "<group>"; };
+		F661649D2949ABC300228691 /* BLEPeripheralDelegatge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEPeripheralDelegatge.swift; sourceTree = "<group>"; };
 		F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientsView.swift; sourceTree = "<group>"; };
 		F6BCC3FE29371BD0008E20F4 /* ShakerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShakerModel.swift; sourceTree = "<group>"; };
 		F6BCC40129372DF7008E20F4 /* Indexable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Indexable.swift; sourceTree = "<group>"; };
@@ -184,9 +192,13 @@
 				F658BD87292B04FD00837D1F /* utilities */,
 				F658BD632929F3B400837D1F /* SwiftUIMapView */,
 				F658BD532929C5B700837D1F /* shakerApp.swift */,
-				F658BD552929C5B700837D1F /* ContentView.swift */,
+				F66164972949660900228691 /* PlayView.swift */,
+				F66164992949661C00228691 /* AccountView.swift */,
 				F661648F294447D900228691 /* CoctailsView.swift */,
 				F6616491294470BD00228691 /* CoctailDetails.swift */,
+				F658BD552929C5B700837D1F /* ContentView.swift */,
+				F661649B2949AB8400228691 /* BLECentralDelegate.swift */,
+				F661649D2949ABC300228691 /* BLEPeripheralDelegatge.swift */,
 				F6BCC3FA2930AAFC008E20F4 /* IngredientsView.swift */,
 				F6BCC41C29385191008E20F4 /* CollasibleSection.swift */,
 				F658BD612929F31200837D1F /* MapContentView.swift */,
@@ -408,6 +420,7 @@
 				F6D7B1EE293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift in Sources */,
 				F6BCC41A29372DF7008E20F4 /* IndexedScrollView.swift in Sources */,
 				F6D7B1FC293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift in Sources */,
+				F661649E2949ABC300228691 /* BLEPeripheralDelegatge.swift in Sources */,
 				F6D7B202293C2D2F00BCC446 /* BKDiscoveriesChange.swift in Sources */,
 				F6D7B1FB293C2D2F00BCC446 /* BKPeripheral.swift in Sources */,
 				F658BD9B292DB70D00837D1F /* WatchConnect.swift in Sources */,
@@ -423,6 +436,7 @@
 				F6D7B203293C2D2F00BCC446 /* BKConnectionAttempt.swift in Sources */,
 				F6BCC41929372DF7008E20F4 /* EnvironmentValues+IndexBarInsets.swift in Sources */,
 				F658BD99292DB6B400837D1F /* NSFileManager+Folder.m in Sources */,
+				F661649C2949AB8400228691 /* BLECentralDelegate.swift in Sources */,
 				F6BCC41229372DF7008E20F4 /* IndexBarBackground.swift in Sources */,
 				F6D7B1EF293C2D2F00BCC446 /* BKDiscovery.swift in Sources */,
 				F658BD562929C5B700837D1F /* ContentView.swift in Sources */,
@@ -439,10 +453,12 @@
 				F6BCC41D29385191008E20F4 /* CollasibleSection.swift in Sources */,
 				F6D7B200293C2D2F00BCC446 /* BKPeer.swift in Sources */,
 				F6D7B1FE293C2D2F00BCC446 /* BKSendDataTask.swift in Sources */,
+				F66164982949660900228691 /* PlayView.swift in Sources */,
 				F6BCC41529372DF7008E20F4 /* ScrollAccessory+Extensions.swift in Sources */,
 				F6616490294447D900228691 /* CoctailsView.swift in Sources */,
 				F6D7B1F0293C2D2F00BCC446 /* BKPeripheralStateMachine.swift in Sources */,
 				F6D7B1F4293C2D2F00BCC446 /* BKCentralStateMachine.swift in Sources */,
+				F661649A2949661C00228691 /* AccountView.swift in Sources */,
 				F6BCC3FF29371BD0008E20F4 /* ShakerModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -576,6 +592,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"shaker/Preview Content\"";
 				DEVELOPMENT_TEAM = U97D34BCNV;
 				ENABLE_PREVIEWS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					IMAGE_SUPPORT,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = shaker/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Find a drinking buddy near you";
@@ -616,6 +636,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"shaker/Preview Content\"";
 				DEVELOPMENT_TEAM = U97D34BCNV;
 				ENABLE_PREVIEWS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					IMAGE_SUPPORT,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = shaker/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Find a drinking buddy near you";
