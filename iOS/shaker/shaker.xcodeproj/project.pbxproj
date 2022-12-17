@@ -598,6 +598,7 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = shaker/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Find a drinking buddy near you";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Find a drinking buddy near you";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Share near-by location (~ mile radious); your actual location is not shared";
@@ -642,6 +643,7 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = shaker/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Find a drinking buddy near you";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Find a drinking buddy near you";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Share near-by location (~ mile radious); your actual location is not shared";

@@ -16,7 +16,6 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
 {
     private var modelData: ShakerModel?
     private let peripheral = BKPeripheral()
-    private var remoteDevices: [UUID:TimeInterval] = [:]
     
     
     deinit {
@@ -35,7 +34,8 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         
     }
     
-    func startPeripheral(_ modelData: ShakerModel) {
+    func startPeripheral(_ modelData: ShakerModel)
+    {
         do {
             self.modelData = modelData
             peripheral.delegate = self
@@ -51,10 +51,9 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         }
     }
     
-    func sendid(_ remoteCentral : BKRemotePeer)
+    private func sendcmd(_ remoteCentral : BKRemotePeer, cmd: String)
     {
-        let idcmd: String = "id\(modelData!.deviceid)"
-        let data = Data(idcmd.utf8)
+        let data = Data(cmd.utf8)
         peripheral.sendData(data, toRemotePeer: remoteCentral) { data, remoteCentral, error in
             guard error == nil else {
                 print("Failed sending to \(remoteCentral)")
@@ -81,18 +80,22 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
 //    }
 
     
-    func peripheral(_ peripheral: BKPeripheral, remoteCentralDidConnect remoteCentral: BKRemoteCentral) {
+    func peripheral(_ peripheral: BKPeripheral, remoteCentralDidConnect remoteCentral: BKRemoteCentral)
+    {
         print("Remote central did connect: \(remoteCentral)")
         // TODO: implement
-        
+        self.modelData?.connectedDevices.append(remoteCentral)
     }
     
-    func peripheral(_ peripheral: BKPeripheral, remoteCentralDidDisconnect remoteCentral: BKRemoteCentral) {
+    func peripheral(_ peripheral: BKPeripheral, remoteCentralDidDisconnect remoteCentral: BKRemoteCentral)
+    {
         print("Remote central did disconnect: \(remoteCentral)")
         // TODO: implement
+        self.modelData?.connectedDevices.remove(remoteCentral)
     }
     
-    func remotePeer(_ remotePeer: BKRemotePeer, didSendArbitraryData data: Data) {
+    func remotePeer(_ remotePeer: BKRemotePeer, didSendArbitraryData data: Data)
+    {
         print("Received data of length: \(data.count) with data: \(data)")
         
         if let strid = String(data: data, encoding: .utf8) {
@@ -102,14 +105,15 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
                 // register UUID
                 if let uuid = UUID(uuidString: String(strid[index...])) {
                     let now = NSDate().timeIntervalSince1970
-                    // add remote device
-                    if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
-                        remoteDevices[uuid] = now
-                    }
-                    sendid(remotePeer)
+                    // add remote device1
+                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
+                    self.modelData?.deleteExpiredDevices()
+                    self.modelData?.detectedDevices[uuid] = now
+                    sendcmd(remotePeer, cmd: "id\(modelData!.deviceid)")
                 }
                 else {
                     print("Invalid device id received; will ignore the device")
+                    sendcmd(remotePeer, cmd: "tnt")
                 }
             }
             // TODO: process other commands

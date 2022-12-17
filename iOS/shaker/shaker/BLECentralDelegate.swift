@@ -17,7 +17,6 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     private var modelData: ShakerModel?
     private var discoveries = [BKDiscovery]()
     private let central = BKCentral()
-    private var remoteDevices: [UUID:TimeInterval] = [:]
     
     deinit {
         _ = try? central.stop()
@@ -60,6 +59,7 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     internal func central(_ central: BKCentral, remotePeripheralDidDisconnect remotePeripheral: BKRemotePeripheral)
     {
         print("Remote peripheral did disconnect: \(remotePeripheral)")
+        self.modelData?.connectedDevices.remove(remotePeripheral)
     }
     
     private func scan(_ central: BKCentral)
@@ -92,30 +92,33 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
         })
     }
     
-    func connect(_ remotePeripheral : BKRemotePeripheral)
+    public func connect(_ remotePeripheral : BKRemotePeripheral)
     {
+        if let connectedDevices = self.modelData?.connectedDevices {
+            for cd in connectedDevices {
+                if cd == remotePeripheral {
+                    // already connected
+                    return
+                }
+            }
+        }
         central.connect(remotePeripheral: remotePeripheral) { remotePeripheral, error in
             guard error == nil else {
                 print("Error connecting peripheral: \(String(describing: error))")
                 // TODO: can't connect
                 return
             }
-            // TODO: connected to remote peripheral, and send device ID
-            self.sendid(remotePeripheral)
+            self.modelData?.connectedDevices.append(remotePeripheral)
         }
     }
     
-    func sendid(_ remotePeripheral : BKRemotePeripheral)
+    public func disconnect(_ remotePeripheral : BKRemotePeripheral)
     {
-        let idcmd: String = "id\(modelData!.deviceid)"
-        let data = Data(idcmd.utf8)
-        print("Sending \(idcmd) to remote device \(remotePeripheral)")
-        central.sendData(data, toRemotePeer: remotePeripheral) { data, remotePeripheral, error in
-            guard error == nil else {
-                print("Failed sending to \(remotePeripheral)")
-                return
-            }
-            print("ID sent")
+        do {
+            try central.disconnectRemotePeripheral(remotePeripheral)
+        }
+        catch {
+            print("Disconnect error: \(error)")
         }
     }
 }
@@ -125,9 +128,21 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
 
 extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
 {
-    // MARK: BKRemotePeripheralDelegate
-    static let REMOTE_TIMEOUT : TimeInterval = 12 * 60 * 60
+    // MARK: BKRemotePeripheralDelegate    
     
+    private func sendcmd(_ remotePeripheral : BKRemotePeripheral, cmd: String)
+    {
+        let data = Data(cmd.utf8)
+        print("Sending \(cmd) to remote device \(remotePeripheral)")
+        central.sendData(data, toRemotePeer: remotePeripheral) { data, remotePeripheral, error in
+            guard error == nil else {
+                print("Failed sending to \(remotePeripheral)")
+                return
+            }
+            print("ID sent")
+        }
+    }
+
     internal func remotePeripheral(_ remotePeripheral: BKRemotePeripheral, didUpdateName name: String)
     {
         print("Name change: \(name)")
@@ -135,8 +150,9 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
     
     internal func remotePeer(_ remotePeer: BKRemotePeer, didSendArbitraryData data: Data)
     {
-        print("Received data of length: \(data.count) with hash: \(data)")
+        print("Received data of length: \(data.count)")
         
+        // TODO: encrypt BT data
         if let strid = String(data: data, encoding: .utf8) {
             let index = strid.index(strid.startIndex, offsetBy: 2)
             if strid[..<index] == "id" {
@@ -144,20 +160,43 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
                 if let uuid = UUID(uuidString: String(strid[index...])) {
                     let now = NSDate().timeIntervalSince1970
                     // add remote device
-                    if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
-                        remoteDevices[uuid] = now
-                    }
-                    // TODO: New device id is exchanged
+                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
+                    // always update time
+                    self.modelData?.deleteExpiredDevices()
+                    self.modelData?.detectedDevices[uuid] = now
+                    // respond with
+                    
+                    // TODO: New device id is exchanged; do something else
+                    
+                    return
                 }
+            }
+            else if strid[..<index] == "nm" {
+                // TODO: got remote name
+                return
             }
             // TODO: process other commands
         }
-        
+        // invalid data or already connected; disconnect
+        print("Unknown data - disconnecting")
+        disconnect(remotePeer as! BKRemotePeripheral)
     }
     
     internal func remotePeripheralIsReady(_ remotePeripheral: BKRemotePeripheral)
     {
-        print("Peripheral ready: \(remotePeripheral)")
+        print("Peripheral is ready: \(remotePeripheral)")
+        sendcmd(remotePeripheral, cmd: "id\(modelData!.deviceid)")
     }
 }
 
+extension RangeReplaceableCollection where Element : Equatable
+{
+    @discardableResult
+    mutating func remove(_ element : Element) -> Element?
+    {
+        if let index = firstIndex(of: element) {
+            return remove(at: index)
+        }
+        return nil
+    }
+}
