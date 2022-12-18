@@ -9,12 +9,17 @@ import Foundation
 import CoreBluetooth
 
 struct BTDeviceInfo {
+    
+    enum BTDeviceState {
+        case disconnected, connecting, connected, ignored
+    }
+    
+    var state: BTDeviceState = .disconnected;
+    
     var peer: BKRemotePeer
     var deviceid: UUID
     var nickname: String?
     var updated: TimeInterval = 0.0
-    var connected: Bool = false
-    var ignore: Bool = false
 }
 
 

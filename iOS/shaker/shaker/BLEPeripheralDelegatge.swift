@@ -86,7 +86,7 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         print("Remote central did connect: \(remoteCentral)")
         if var device = self.modelData?.BTDevice(remoteCentral) {
             device.updated = NSDate().timeIntervalSince1970
-            device.connected = true
+            device.state = .connected
         }
     }
     
@@ -95,7 +95,7 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         print("Remote central did disconnect: \(remoteCentral)")
         if var device = self.modelData?.BTDevice(remoteCentral) {
             device.updated = NSDate().timeIntervalSince1970
-            device.connected = false
+            device.state = .disconnected
         }
         self.modelData?.BTDeleteExpired()
     }
