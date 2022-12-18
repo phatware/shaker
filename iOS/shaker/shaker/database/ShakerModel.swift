@@ -9,11 +9,12 @@ import Foundation
 import CoreBluetooth
 
 struct BTDeviceInfo {
-    var peer: BKRemotePeer?
-    var devid: UUID?
-    var name: String?
-    var expires: TimeInterval = 0
+    var peer: BKRemotePeer
+    var deviceid: UUID
+    var nickname: String?
+    var updated: TimeInterval = 0.0
     var connected: Bool = false
+    var ignore: Bool = false
 }
 
 
@@ -21,28 +22,54 @@ final class ShakerModel: ObservableObject
 {
     @Published var database: CoctailsDatabase = load()
     @Published var deviceid: String = makeid()
-    @Published var detectedDevices: [UUID:TimeInterval] = [:]
-    @Published var connectedDevices: [BKRemotePeer] = []
+    @Published var detectedDevices: [BTDeviceInfo] = []
+    @Published var nickname: String = "<Unique_name>"
 
     public static let REMOTE_TIMEOUT : TimeInterval = 60
 
-    func recipeName(_ rec_id: Int64, alcohol: Bool = true) -> String
+    public func recipeName(_ rec_id: Int64, alcohol: Bool = true) -> String
     {
-        return database.getRecipeName(rec_id, alcohol: alcohol)?["name"] as? String ?? "(Unknown)"
+        return database.getRecipeName(rec_id, alcohol: alcohol)?["name"] as? String ?? "<Unknown>"
     }
     
-    public func deleteExpiredDevices()
+    public func BTDeleteExpired()
     {
         let now = NSDate().timeIntervalSince1970
-        var delkeys: [UUID] = []
-        for device in detectedDevices {
-            if now - device.value > ShakerModel.REMOTE_TIMEOUT {
-                delkeys.append(device.key)
+        for (index, device) in detectedDevices.enumerated() {
+            if now - device.updated > ShakerModel.REMOTE_TIMEOUT {
+                detectedDevices.remove(at: index)
             }
         }
-        for key in delkeys {
-            detectedDevices.removeValue(forKey: key)
+    }
+    
+    public func BTDevice(_ forName: String) -> BTDeviceInfo?
+    {
+        for (_, device) in detectedDevices.enumerated() {
+            if device.nickname == forName {
+                return device
+            }
         }
+        return nil
+    }
+    
+    public func BTDevice(_ forId: UUID) -> BTDeviceInfo?
+    {
+        for (_, device) in detectedDevices.enumerated() {
+            if device.deviceid == forId {
+                return device
+            }
+        }
+        return nil
+    }
+
+    public func BTDevice(_ forRemote: BKRemotePeer) -> BTDeviceInfo?
+    {
+        for (_, device) in detectedDevices.enumerated() {
+            if device.peer == forRemote {
+                return device
+            }
+        }
+        return nil
     }
 }
 

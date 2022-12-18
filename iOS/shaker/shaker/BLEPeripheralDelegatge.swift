@@ -42,7 +42,7 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
             peripheral.addAvailabilityObserver(self)
             let dataServiceUUID = UUID(uuidString: "C2436366-6B33-456E-9DA1-6394D9601C4C")!
             let dataServiceCharacteristicUUID = UUID(uuidString: "ECF0C0D1-FB70-43AA-B4D5-6B2B048D55CF")!
-            let localName = Bundle.main.infoDictionary!["CFBundleName"] as? String
+            let localName = modelData.deviceid  // Unique device ID
             let configuration = BKPeripheralConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID, localName: localName)
             try peripheral.startWithConfiguration(configuration)
             print("Awaiting connections from remote centrals")
@@ -83,15 +83,20 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
     func peripheral(_ peripheral: BKPeripheral, remoteCentralDidConnect remoteCentral: BKRemoteCentral)
     {
         print("Remote central did connect: \(remoteCentral)")
-        // TODO: implement
-        self.modelData?.connectedDevices.append(remoteCentral)
+        if var device = self.modelData?.BTDevice(remoteCentral) {
+            device.updated = NSDate().timeIntervalSince1970
+            device.connected = true
+        }
     }
     
     func peripheral(_ peripheral: BKPeripheral, remoteCentralDidDisconnect remoteCentral: BKRemoteCentral)
     {
         print("Remote central did disconnect: \(remoteCentral)")
-        // TODO: implement
-        self.modelData?.connectedDevices.remove(remoteCentral)
+        if var device = self.modelData?.BTDevice(remoteCentral) {
+            device.updated = NSDate().timeIntervalSince1970
+            device.connected = false
+        }
+        self.modelData?.BTDeleteExpired()
     }
     
     func remotePeer(_ remotePeer: BKRemotePeer, didSendArbitraryData data: Data)
@@ -100,24 +105,31 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         
         if let strid = String(data: data, encoding: .utf8) {
             let index: String.Index = strid.index(strid.startIndex, offsetBy: 2)
-            if strid[..<index] == "id" {
-                // send my ID
-                // register UUID
-                if let uuid = UUID(uuidString: String(strid[index...])) {
-                    let now = NSDate().timeIntervalSince1970
-                    // add remote device1
-                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
-                    self.modelData?.deleteExpiredDevices()
-                    self.modelData?.detectedDevices[uuid] = now
-                    sendcmd(remotePeer, cmd: "id\(modelData!.deviceid)")
+            // TODO: got data from central
+            if strid[..<index] == "nm" {
+                if var device = self.modelData?.BTDevice(remotePeer) {
+                    device.updated = NSDate().timeIntervalSince1970
+                    device.nickname = String(strid[index...])
                 }
-                else {
-                    print("Invalid device id received; will ignore the device")
-                    sendcmd(remotePeer, cmd: "tnt")
-                }
+                // send name back
+                sendcmd(remotePeer, cmd: "nm\(self.modelData!.nickname)")
             }
-            // TODO: process other commands
         }
+//                // send my ID
+//                // register UUID
+//                if let uuid = UUID(uuidString: String(strid[index...])) {
+//                    let now = NSDate().timeIntervalSince1970
+//                    // add remote device1
+//                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
+//                    self.modelData?.BTDeleteExpired()
+//                }
+//                else {
+//                    print("Invalid device id received; will ignore the device")
+//                    sendcmd(remotePeer, cmd: "tnt")
+//                }
+//            }
+//            // TODO: process other commands
+//        }
     }
     
 }
