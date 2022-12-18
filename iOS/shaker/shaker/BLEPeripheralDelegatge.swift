@@ -42,7 +42,8 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
             peripheral.addAvailabilityObserver(self)
             let dataServiceUUID = UUID(uuidString: "C2436366-6B33-456E-9DA1-6394D9601C4C")!
             let dataServiceCharacteristicUUID = UUID(uuidString: "ECF0C0D1-FB70-43AA-B4D5-6B2B048D55CF")!
-            let localName = modelData.deviceid  // Unique device ID
+            let index: String.Index = modelData.deviceid.index(modelData.deviceid.startIndex, offsetBy: 8)
+            let localName = String(modelData.deviceid[index...]).replacingOccurrences(of: "-", with: "")  // Unique device ID - make it 24 chars long
             let configuration = BKPeripheralConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID, localName: localName)
             try peripheral.startWithConfiguration(configuration)
             print("Awaiting connections from remote centrals")
