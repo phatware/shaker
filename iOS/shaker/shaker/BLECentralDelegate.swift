@@ -71,25 +71,31 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
         central.scanContinuouslyWithChangeHandler({ changes, discoveries in
             for insertedDiscovery in changes.filter({ $0 == .insert(discovery: nil) }) {
                 var connect = true
-                for removedDiscovery in changes.filter({ $0 == .remove(discovery: nil) }) {
-                    if removedDiscovery.discovery.remotePeripheral == insertedDiscovery.discovery.remotePeripheral {
-                        connect = false
-                        break
-                    }
-                }
+//                for removedDiscovery in changes.filter({ $0 == .remove(discovery: nil) }) {
+//                    if removedDiscovery.discovery.remotePeripheral == insertedDiscovery.discovery.remotePeripheral {
+//                        connect = false
+//                        break
+//                    }
+//                }
                 if connect {
-                    if let name = insertedDiscovery.discovery.localName, let uuid = UUID(uuidString: name) {
-                        if var device = self.modelData?.BTDevice(uuid) {
-                            // already discovered, update time
-                            device.updated = NSDate().timeIntervalSince1970
-                            continue
+                    if let name = insertedDiscovery.discovery.localName, name.lengthOfBytes(using: .utf8) == 24 {
+                        let index1 = name.index(name.startIndex, offsetBy: 4)
+                        let index2 = name.index(name.startIndex, offsetBy: 8)
+                        let index3 = name.index(name.startIndex, offsetBy: 12)
+                        let uuidstr = "C2DA0000-\(name[..<index1])-\(name[index1..<index2])-\(name[index2..<index3])-\(name[index3...])"
+                        if let uuid = UUID(uuidString: uuidstr) {
+                            if var device = self.modelData?.BTDevice(uuid) {
+                                // already discovered, update time
+                                device.updated = NSDate().timeIntervalSince1970
+                                continue
+                            }
+                            // add new device to the list and connect to it to get config
+                            let new_device = BTDeviceInfo(peer: insertedDiscovery.discovery.remotePeripheral, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
+                            self.modelData?.detectedDevices.append(new_device)
+                            
+                            print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
+                            self.connect(insertedDiscovery.discovery.remotePeripheral)
                         }
-                        // add new device to the list and connect to it to get config
-                        let new_device = BTDeviceInfo(peer: insertedDiscovery.discovery.remotePeripheral, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
-                        self.modelData?.detectedDevices.append(new_device)
-                        
-                        print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
-                        self.connect(insertedDiscovery.discovery.remotePeripheral)
                     }
                 }
             }
@@ -182,7 +188,7 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
 //                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
 //                    // always update time
 //                    self.modelData?.BTDeleteExpired()
-//                    // respond with
+//                    // respond withp
 //
 //                    // TODO: New device id is exchanged; do something else
 //
