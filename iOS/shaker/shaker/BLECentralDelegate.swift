@@ -66,39 +66,30 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     private func scan(_ central: BKCentral)
     {
         central.scanContinuouslyWithChangeHandler({ changes, discoveries in
+            
             for insertedDiscovery in changes.filter({ $0 == .insert(discovery: nil) }) {
-                var connect = true
-//                for removedDiscovery in changes.filter({ $0 == .remove(discovery: nil) }) {
-//                    if removedDiscovery.discovery.remotePeripheral == insertedDiscovery.discovery.remotePeripheral {
-//                        connect = false
-//                        break
-//                    }
-//                }
-                if connect {
-                    if let name = insertedDiscovery.discovery.localName, name.lengthOfBytes(using: .utf8) == 24 {
-                        let index1 = name.index(name.startIndex, offsetBy: 4)
-                        let index2 = name.index(name.startIndex, offsetBy: 8)
-                        let index3 = name.index(name.startIndex, offsetBy: 12)
-                        let uuidstr = "C2DA0000-\(name[..<index1])-\(name[index1..<index2])-\(name[index2..<index3])-\(name[index3...])"
-                        if let uuid = UUID(uuidString: uuidstr) {
-                            if var device = self.modelData?.BTDevice(uuid) {
-                                // already discovered, update time
-                                device.updated = NSDate().timeIntervalSince1970
-                                if device.state == .disconnected {
-                                    print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
-                                    // TODO: connection?
-                                    self.modelData?.BTDevice(insertedDiscovery.discovery.remotePeripheral, setState: .connecting)
-                                    self.connect(insertedDiscovery.discovery.remotePeripheral)
-                                }
-                                continue
+                if let name = insertedDiscovery.discovery.localName, name.lengthOfBytes(using: .utf8) == 24 {
+                    if let uuid = self.modelData?.BTDeviceNameToUuid(name) {
+                        if var device = self.modelData?.BTDevice(uuid) {
+                            
+                            // already discovered, update time
+                            if device.state == .disconnected {
+                                print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
+                                // reconnect, if disconnected
+                                self.modelData?.BTDevice(device.peer, setState: .connecting)
+                                self.connect(insertedDiscovery.discovery.remotePeripheral)
                             }
-                            // add new device to the list and connect to it to get config
-                            var new_device = BTDeviceInfo(peer: insertedDiscovery.discovery.remotePeripheral, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
-                            self.modelData?.detectedDevices.append(new_device)
-                            new_device.state = .connecting
-                            print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
-                            self.connect(insertedDiscovery.discovery.remotePeripheral)
+                            continue
                         }
+                        // add new device to the list and connect to it to get config
+                        let remotePeer = insertedDiscovery.discovery.remotePeripheral
+                        remotePeer.delegate = self
+                        remotePeer.peripheralDelegate = self
+                        var new_device = BTDeviceInfo(peer: remotePeer, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
+                        self.modelData?.detectedDevices.append(new_device)
+                        new_device.state = .connecting
+                        print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
+                        self.connect(insertedDiscovery.discovery.remotePeripheral)
                     }
                 }
             }
@@ -189,25 +180,14 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
         // TODO: encrypt BT data
         if let strid = String(data: data, encoding: .utf8) {
             let index = strid.index(strid.startIndex, offsetBy: 2)
-//            if strid[..<index] == "id" {
-//                // send my ID-0
-//                if let _ = UUID(uuidString: String(strid[index...])) {
-//                    // let now = NSDate().timeIntervalSince1970
-//                    // add remote device
-//                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
-//                    // always update time
-//                    self.modelData?.BTDeleteExpired()
-//                    // respond withp
-//
-//                    // TODO: New device id is exchanged; do something else
-//
-//                    return
-//                }
-//            }
             if strid[..<index] == "nm" {
                 let name = String(strid[index...])
-                self.modelData?.BTDevice(remotePeer, setName: name)
-                // TODO: got name, send device ID?
+                if let modelData = self.modelData {
+                    modelData.BTDevice(remotePeer, setName: name)
+                    // send ID and local name back to peripheral
+                    let cmd = String("in\(modelData.localName)\(modelData.nickname)")
+                    self.sendcmd(remotePeer as! BKRemotePeripheral, cmd: cmd)
+                }
                 return
             }
             // TODO: process other commands

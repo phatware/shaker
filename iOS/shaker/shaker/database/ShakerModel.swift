@@ -30,11 +30,19 @@ final class ShakerModel: ObservableObject
     @Published var detectedDevices: [BTDeviceInfo] = []
     @Published var nickname: String = "<Unique_name>"
     
-    public static let REMOTE_TIMEOUT : TimeInterval = 60
+    public static let REMOTEID_PREFIX: String = "C2DA0000"
+    public static let REMOTE_TIMEOUT:  TimeInterval = 60
     
     public func recipeName(_ rec_id: Int64, alcohol: Bool = true) -> String
     {
         return database.getRecipeName(rec_id, alcohol: alcohol)?["name"] as? String ?? "<Unknown>"
+    }
+    
+    public func localName() ->String
+    {
+        let index: String.Index = self.deviceid.index(self.deviceid.startIndex, offsetBy: 8)
+        let localName = String(self.deviceid[index...]).replacingOccurrences(of: "-", with: "")  // Unique device ID - make it 24 chars long
+        return localName
     }
     
     public func BTDeleteExpired()
@@ -92,6 +100,16 @@ final class ShakerModel: ObservableObject
             detectedDevices[index].updated = NSDate().timeIntervalSince1970
         }
     }
+    
+    public func BTDeviceNameToUuid(_ name: String) -> UUID?
+    {
+        let index1 = name.index(name.startIndex, offsetBy: 4)
+        let index2 = name.index(name.startIndex, offsetBy: 8)
+        let index3 = name.index(name.startIndex, offsetBy: 12)
+        let uuidstr = "\(ShakerModel.REMOTEID_PREFIX)-\(name[..<index1])-\(name[index1..<index2])-\(name[index2..<index3])-\(name[index3...])"
+        return UUID(uuidString: uuidstr)
+    }
+    
 }
 
 func makeid() -> String

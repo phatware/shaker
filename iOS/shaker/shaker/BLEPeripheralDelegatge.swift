@@ -42,9 +42,7 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
             peripheral.addAvailabilityObserver(self)
             let dataServiceUUID = UUID(uuidString: "C2436366-6B33-456E-9DA1-6394D9601C4C")!
             let dataServiceCharacteristicUUID = UUID(uuidString: "ECF0C0D1-FB70-43AA-B4D5-6B2B048D55CF")!
-            let index: String.Index = modelData.deviceid.index(modelData.deviceid.startIndex, offsetBy: 8)
-            let localName = String(modelData.deviceid[index...]).replacingOccurrences(of: "-", with: "")  // Unique device ID - make it 24 chars long
-            let configuration = BKPeripheralConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID, localName: localName)
+            let configuration = BKPeripheralConfiguration(dataServiceUUID: dataServiceUUID, dataServiceCharacteristicUUID: dataServiceCharacteristicUUID, localName: modelData.localName())
             try peripheral.startWithConfiguration(configuration)
             print("Awaiting connections from remote centrals")
         } catch let error {
@@ -84,6 +82,7 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
     func peripheral(_ peripheral: BKPeripheral, remoteCentralDidConnect remoteCentral: BKRemoteCentral)
     {
         print("Remote central did connect: \(remoteCentral)")
+        remoteCentral.delegate = self
         self.modelData?.BTDevice(remoteCentral, setState: .connected)
         self.sendcmd(remoteCentral, cmd: "nm\(self.modelData!.nickname)")
     }
@@ -102,27 +101,24 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         if let strid = String(data: data, encoding: .utf8) {
             let index: String.Index = strid.index(strid.startIndex, offsetBy: 2)
             // TODO: got data from central
-            if strid[..<index] == "nm" {
-                self.modelData?.BTDevice(remotePeer, setName: String(strid[index...]))
-                // send name back
-                // sendcmd(remotePeer, cmd: "nm\(self.modelData!.nickname)")
+            if strid[..<index] == "in", strid.lengthOfBytes(using: .utf8) > 26 {
+                let index2: String.Index = strid.index(strid.startIndex, offsetBy: 26)
+                let idstr = String(strid[index..<index2])
+                let nickname = String(strid[index2...])
+                if let uuid = self.modelData?.BTDeviceNameToUuid(idstr) {
+                    if var device = self.modelData?.BTDevice(uuid) {
+                        self.modelData?.BTDevice(device.peer, setName: nickname)
+                    }
+                    else {
+                        // add new device to the list and connect to it to get config
+                        var new_device = BTDeviceInfo(peer: remotePeer, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
+                        new_device.state = .connected
+                        new_device.nickname = nickname
+                        self.modelData?.detectedDevices.append(new_device)
+                    }
+                }
             }
         }
-//                // send my ID
-//                // register UUID
-//                if let uuid = UUID(uuidString: String(strid[index...])) {
-//                    let now = NSDate().timeIntervalSince1970
-//                    // add remote device
-//                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
-//                    self.modelData?.BTDeleteExpired()
-//                }
-//                else {
-//                    print("Invalid device id received; will ignore the device")
-//                    sendcmd(remotePeer, cmd: "tnt")
-//                }
-//            }
-//            // TODO: process other commands
-//        }
     }
     
 }
