@@ -29,9 +29,9 @@ final class ShakerModel: ObservableObject
     @Published var deviceid: String = makeid()
     @Published var detectedDevices: [BTDeviceInfo] = []
     @Published var nickname: String = "<Unique_name>"
-
+    
     public static let REMOTE_TIMEOUT : TimeInterval = 60
-
+    
     public func recipeName(_ rec_id: Int64, alcohol: Bool = true) -> String
     {
         return database.getRecipeName(rec_id, alcohol: alcohol)?["name"] as? String ?? "<Unknown>"
@@ -66,7 +66,7 @@ final class ShakerModel: ObservableObject
         }
         return nil
     }
-
+    
     public func BTDevice(_ forRemote: BKRemotePeer) -> BTDeviceInfo?
     {
         for (_, device) in detectedDevices.enumerated() {
@@ -75,6 +75,22 @@ final class ShakerModel: ObservableObject
             }
         }
         return nil
+    }
+    
+    public func BTDevice(_ remote: BKRemotePeer, setState: BTDeviceInfo.BTDeviceState)
+    {
+        for index in 0..<detectedDevices.count {
+            detectedDevices[index].state = setState
+            detectedDevices[index].updated = NSDate().timeIntervalSince1970
+        }
+    }
+    
+    public func BTDevice(_ remote: BKRemotePeer, setName: String)
+    {
+        for index in 0..<detectedDevices.count {
+            detectedDevices[index].nickname = setName
+            detectedDevices[index].updated = NSDate().timeIntervalSince1970
+        }
     }
 }
 

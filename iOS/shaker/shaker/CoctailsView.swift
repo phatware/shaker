@@ -197,8 +197,8 @@ struct CoctailsView: View
     }
     
     var body: some View {
-        NavigationView {
-            VStack {
+        VStack {
+            NavigationView {
                 List {
                     let drinks = alcoholic
                     switch(self.groupby) {

@@ -84,19 +84,14 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
     func peripheral(_ peripheral: BKPeripheral, remoteCentralDidConnect remoteCentral: BKRemoteCentral)
     {
         print("Remote central did connect: \(remoteCentral)")
-        if var device = self.modelData?.BTDevice(remoteCentral) {
-            device.updated = NSDate().timeIntervalSince1970
-            device.state = .connected
-        }
+        self.modelData?.BTDevice(remoteCentral, setState: .connected)
+        self.sendcmd(remoteCentral, cmd: "nm\(self.modelData!.nickname)")
     }
     
     func peripheral(_ peripheral: BKPeripheral, remoteCentralDidDisconnect remoteCentral: BKRemoteCentral)
     {
         print("Remote central did disconnect: \(remoteCentral)")
-        if var device = self.modelData?.BTDevice(remoteCentral) {
-            device.updated = NSDate().timeIntervalSince1970
-            device.state = .disconnected
-        }
+        self.modelData?.BTDevice(remoteCentral, setState: .disconnected)
         self.modelData?.BTDeleteExpired()
     }
     
@@ -108,19 +103,16 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
             let index: String.Index = strid.index(strid.startIndex, offsetBy: 2)
             // TODO: got data from central
             if strid[..<index] == "nm" {
-                if var device = self.modelData?.BTDevice(remotePeer) {
-                    device.updated = NSDate().timeIntervalSince1970
-                    device.nickname = String(strid[index...])
-                }
+                self.modelData?.BTDevice(remotePeer, setName: String(strid[index...]))
                 // send name back
-                sendcmd(remotePeer, cmd: "nm\(self.modelData!.nickname)")
+                // sendcmd(remotePeer, cmd: "nm\(self.modelData!.nickname)")
             }
         }
 //                // send my ID
 //                // register UUID
 //                if let uuid = UUID(uuidString: String(strid[index...])) {
 //                    let now = NSDate().timeIntervalSince1970
-//                    // add remote device1
+//                    // add remote device
 //                    // if now - (remoteDevices[uuid] ?? 0) > CentralDelegate.REMOTE_TIMEOUT {
 //                    self.modelData?.BTDeleteExpired()
 //                }

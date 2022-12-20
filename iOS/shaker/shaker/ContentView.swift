@@ -61,7 +61,7 @@ struct ContentView: View
         .navigationTitle("Shaker")
         .onAppear() {
             central.startCentral(modelData)
-            peripheral.startPeripheral(modelData)
+            // peripheral.startPeripheral(modelData)
         }
     }
 }

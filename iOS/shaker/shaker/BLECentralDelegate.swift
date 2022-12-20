@@ -60,10 +60,7 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     internal func central(_ central: BKCentral, remotePeripheralDidDisconnect remotePeripheral: BKRemotePeripheral)
     {
         print("Remote peripheral did disconnect: \(remotePeripheral)")
-        if var device = self.modelData?.BTDevice(remotePeripheral) {
-            device.updated = NSDate().timeIntervalSince1970
-            device.state = .disconnected
-        }
+        self.modelData?.BTDevice(remotePeripheral, setState: .disconnected)
     }
     
     private func scan(_ central: BKCentral)
@@ -90,7 +87,7 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
                                 if device.state == .disconnected {
                                     print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
                                     // TODO: connection?
-                                    device.state = .connecting
+                                    self.modelData?.BTDevice(insertedDiscovery.discovery.remotePeripheral, setState: .connecting)
                                     self.connect(insertedDiscovery.discovery.remotePeripheral)
                                 }
                                 continue
@@ -99,7 +96,6 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
                             var new_device = BTDeviceInfo(peer: insertedDiscovery.discovery.remotePeripheral, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
                             self.modelData?.detectedDevices.append(new_device)
                             new_device.state = .connecting
-                            
                             print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
                             self.connect(insertedDiscovery.discovery.remotePeripheral)
                         }
@@ -132,13 +128,13 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
                     print("Error connecting peripheral: \(String(describing: error))")
                     // TODO: can't connect
                     if device.state == .connecting {
-                        device.state = .disconnected
+                        self.modelData?.BTDevice(remotePeripheral, setState: .disconnected)
                     }
                     return
                 }
                 print("Connected remote Peripheral")
-                device.state = .connected
-                self.sendcmd(remotePeripheral, cmd: "nm\(self.modelData!.nickname)")
+                self.modelData?.BTDevice(remotePeripheral, setState: .connected)
+                // self.sendcmd(remotePeripheral, cmd: "nm\(self.modelData!.nickname)")
             }
             else {
                 //
@@ -152,10 +148,7 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
         print("Will disconnect remote Peripheral")
         do {
             try central.disconnectRemotePeripheral(remotePeripheral)
-            if var device = self.modelData?.BTDevice(remotePeripheral) {
-                device.updated = NSDate().timeIntervalSince1970
-                device.state = .disconnected
-            }
+            self.modelData?.BTDevice(remotePeripheral, setState: .disconnected)
         }
         catch {
             print("Disconnect error: \(error)")
@@ -212,13 +205,10 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
 //                }
 //            }
             if strid[..<index] == "nm" {
-                // TODO: got the remote name
                 let name = String(strid[index...])
-                if var device = self.modelData?.BTDevice(remotePeer) {
-                    device.updated = NSDate().timeIntervalSince1970
-                    device.nickname = name
-                }
-                // return: can now disconnect and ignore this device
+                self.modelData?.BTDevice(remotePeer, setName: name)
+                // TODO: got name, send device ID?
+                return
             }
             // TODO: process other commands
         }
@@ -229,8 +219,7 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
     
     internal func remotePeripheralIsReady(_ remotePeripheral: BKRemotePeripheral)
     {
-        // print("Peripheral is ready: \(remotePeripheral)")
-        sendcmd(remotePeripheral, cmd: "nm\(self.modelData!.nickname)")
+        print("Peripheral is ready: \(remotePeripheral)")
     }
 }
 
