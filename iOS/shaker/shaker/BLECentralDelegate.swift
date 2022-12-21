@@ -17,7 +17,13 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     private var modelData: ShakerModel?
     private var discoveries = [BKDiscovery]()
     private let central = BKCentral()
+    private var onStateChange: ((ShakerModel, BKCentral.ContinuousScanState) -> Void)? = nil
     
+    init(onStateChange: ((ShakerModel, BKCentral.ContinuousScanState) -> Void)?)
+    {
+        self.onStateChange = onStateChange
+    }
+
     deinit {
         _ = try? central.stop()
     }
@@ -70,14 +76,21 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
             for insertedDiscovery in changes.filter({ $0 == .insert(discovery: nil) }) {
                 if let name = insertedDiscovery.discovery.localName, name.lengthOfBytes(using: .utf8) == 24 {
                     if let uuid = self.modelData?.BTDeviceNameToUuid(name) {
-                        if var device = self.modelData?.BTDevice(uuid) {
+                        if let device = self.modelData?.BTDevice(uuid) {
                             
                             // already discovered, update time
                             if device.state == .disconnected {
+                                // try to connect again
                                 print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
                                 // reconnect, if disconnected
                                 self.modelData?.BTDevice(device.peer, setState: .connecting)
                                 self.connect(insertedDiscovery.discovery.remotePeripheral)
+                            }
+                            else if device.state == .configured {
+                                self.modelData?.BTDeviceUpdate(device.peer)
+                            }
+                            else if device.state == .ignored {
+                                self.modelData?.BTDeviceUpdate(device.peer)
                             }
                             continue
                         }
@@ -95,6 +108,9 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
             }
             
         }, stateHandler: { newState in
+            if let onStateChange = self.onStateChange, let model = self.modelData {
+                onStateChange(model, newState)
+            }
             if newState == .scanning {
                 // TODO: scanning...
                 print("Scanning for peripherals")
@@ -112,8 +128,7 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     {
         central.connect(remotePeripheral: remotePeripheral) { remotePeripheral, error in
 
-            if var device = self.modelData?.BTDevice(remotePeripheral) {
-                device.updated = NSDate().timeIntervalSince1970
+            if let device = self.modelData?.BTDevice(remotePeripheral) {
 
                 guard error == nil else {
                     print("Error connecting peripheral: \(String(describing: error))")
@@ -184,9 +199,12 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
                 let name = String(strid[index...])
                 if let modelData = self.modelData {
                     modelData.BTDevice(remotePeer, setName: name)
+                    // the device is now configured
+                    modelData.BTDevice(remotePeer, setState: .configured)
                     // send ID and local name back to peripheral
-                    let cmd = String("in\(modelData.localName)\(modelData.nickname)")
+                    let cmd = String("in\(modelData.localName())\(modelData.nickname)")
                     self.sendcmd(remotePeer as! BKRemotePeripheral, cmd: cmd)
+                    
                 }
                 return
             }

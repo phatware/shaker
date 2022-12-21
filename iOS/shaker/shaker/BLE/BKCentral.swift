@@ -182,6 +182,7 @@ public class BKCentral: BKPeer, BKCBCentralManagerStateDelegate, BKConnectionPoo
         - parameter errorHandler: An error handler allowing you to react when an error occurs. For now this is also called when the scan is manually interrupted.
     */
 
+    // TODO: increase intervals after testing
     public func scanContinuouslyWithChangeHandler(_ changeHandler: @escaping ContinuousScanChangeHandler, stateHandler: ContinuousScanStateHandler?, duration: TimeInterval = 3, inBetweenDelay: TimeInterval = 5, updateDuplicates: Bool = false, errorHandler: ContinuousScanErrorHandler?) {
         do {
             try stateMachine.handleEvent(.scan)

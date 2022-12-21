@@ -17,9 +17,8 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
     private var modelData: ShakerModel?
     private let peripheral = BKPeripheral()
     
-    
     deinit {
-        _ = try? peripheral.stop()
+        stop()
     }
     
     func availabilityObserver(_ availabilityObservable: BKAvailabilityObservable, availabilityDidChange availability: BKAvailability)
@@ -32,6 +31,11 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
     {
         // TODO: implement
         
+    }
+    
+    func stop()
+    {
+        _ = try? peripheral.stop()
     }
     
     func startPeripheral(_ modelData: ShakerModel)
@@ -62,23 +66,6 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
         }
     }
     
-//    @objc private func sendData() {
-//        let numberOfBytesToSend: Int = Int(arc4random_uniform(950) + 50)
-//        let data = Data.dataWithNumberOfBytes(numberOfBytesToSend)
-//        Logger.log("Prepared \(numberOfBytesToSend) bytes with MD5 hash: \(data.md5().toHexString())")
-//        for remoteCentral in peripheral.connectedRemoteCentrals {
-//            Logger.log("Sending to \(remoteCentral)")
-//            peripheral.sendData(data, toRemotePeer: remoteCentral) { data, remoteCentral, error in
-//                guard error == nil else {
-//                    Logger.log("Failed sending to \(remoteCentral)")
-//                    return
-//                }
-//                Logger.log("Sent to \(remoteCentral)")
-//            }
-//        }
-//    }
-
-    
     func peripheral(_ peripheral: BKPeripheral, remoteCentralDidConnect remoteCentral: BKRemoteCentral)
     {
         print("Remote central did connect: \(remoteCentral)")
@@ -106,13 +93,13 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
                 let idstr = String(strid[index..<index2])
                 let nickname = String(strid[index2...])
                 if let uuid = self.modelData?.BTDeviceNameToUuid(idstr) {
-                    if var device = self.modelData?.BTDevice(uuid) {
+                    if let device = self.modelData?.BTDevice(uuid) {
                         self.modelData?.BTDevice(device.peer, setName: nickname)
                     }
                     else {
                         // add new device to the list and connect to it to get config
                         var new_device = BTDeviceInfo(peer: remotePeer, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
-                        new_device.state = .connected
+                        new_device.state = .configured
                         new_device.nickname = nickname
                         self.modelData?.detectedDevices.append(new_device)
                     }
@@ -120,6 +107,5 @@ class PeripheralDelegatge : BKPeripheralDelegate, BKAvailabilityObserver, BKRemo
             }
         }
     }
-    
 }
 

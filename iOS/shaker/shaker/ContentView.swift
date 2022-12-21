@@ -13,14 +13,12 @@ import CoreBluetooth
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// Content view
 ///
+
 struct ContentView: View
 {
     @Environment(\.scenePhase) var scenePhase
     @EnvironmentObject var modelData: ShakerModel
     
-    private let central = CentralDelegate()
-    private let peripheral = PeripheralDelegatge()
-
     var body: some View {
         TabView {
             CoctailsView()
@@ -60,8 +58,7 @@ struct ContentView: View
         }
         .navigationTitle("Shaker")
         .onAppear() {
-            central.startCentral(modelData)
-            // peripheral.startPeripheral(modelData)
+            modelData.central.startCentral(modelData)
         }
     }
 }
