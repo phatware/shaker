@@ -25,14 +25,22 @@ struct BTDeviceInfo {
 func onStateChange(_ model: ShakerModel, state: BKCentral.ContinuousScanState) -> Void
 {
     // TODO: scanning state changed - stop/start peripheral? is this a good place?
+    print("BLE scan state: \(state)")
     switch state {
     case .waiting:
-        model.peripheral.startPeripheral(model)
+        Task.detached(operation: {
+            model.peripheral.startPeripheral(model)
+        })
         break
     case .scanning:
-        model.peripheral.stop()
+        Task.detached(operation: {
+            model.peripheral.stop()
+        })
         break
     case .stopped:
+        Task.detached(operation: {
+            model.peripheral.stop()
+        })
         break
     }
 }

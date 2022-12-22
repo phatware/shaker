@@ -114,7 +114,6 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
             if newState == .scanning {
                 // TODO: scanning...
                 print("Scanning for peripherals")
-                return
             }
             else if newState == .stopped {
                 self.discoveries.removeAll()
