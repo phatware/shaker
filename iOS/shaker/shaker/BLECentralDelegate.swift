@@ -17,13 +17,7 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     private var modelData: ShakerModel?
     private var discoveries = [BKDiscovery]()
     private let central = BKCentral()
-    private var onStateChange: ((ShakerModel, BKCentral.ContinuousScanState) -> Void)? = nil
     
-    init(onStateChange: ((ShakerModel, BKCentral.ContinuousScanState) -> Void)?)
-    {
-        self.onStateChange = onStateChange
-    }
-
     deinit {
         _ = try? central.stop()
     }
@@ -66,7 +60,6 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     internal func central(_ central: BKCentral, remotePeripheralDidDisconnect remotePeripheral: BKRemotePeripheral)
     {
         print("Remote peripheral did disconnect: \(remotePeripheral)")
-        self.modelData?.BTDevice(remotePeripheral, setState: .disconnected)
     }
     
     private func scan(_ central: BKCentral)
@@ -77,40 +70,22 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
                 if let name = insertedDiscovery.discovery.localName, name.lengthOfBytes(using: .utf8) == 24 {
                     if let uuid = self.modelData?.BTDeviceNameToUuid(name) {
                         if let device = self.modelData?.BTDevice(uuid) {
-                            
-                            // already discovered, update time
-                            if device.state == .disconnected {
-                                // try to connect again
-                                print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
-                                // reconnect, if disconnected
-                                self.modelData?.BTDevice(device.peer, setState: .connecting)
-                                self.connect(insertedDiscovery.discovery.remotePeripheral)
-                            }
-                            else if device.state == .configured {
-                                self.modelData?.BTDeviceUpdate(device.peer)
-                            }
-                            else if device.state == .ignored {
-                                self.modelData?.BTDeviceUpdate(device.peer)
-                            }
-                            continue
+                            self.modelData?.BTDeviceUpdate(device.peer)
                         }
-                        // add new device to the list and connect to it to get config
-                        let remotePeer = insertedDiscovery.discovery.remotePeripheral
-                        remotePeer.delegate = self
-                        remotePeer.peripheralDelegate = self
-                        var new_device = BTDeviceInfo(peer: remotePeer, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
-                        self.modelData?.detectedDevices.append(new_device)
-                        new_device.state = .connecting
-                        print("Discovery: \(String(describing: insertedDiscovery.discovery.localName)) - connecting...")
-                        self.connect(insertedDiscovery.discovery.remotePeripheral)
+                        else {
+                            // add new device to the list and connect to it to get config
+                            let remotePeer = insertedDiscovery.discovery.remotePeripheral
+                            remotePeer.delegate = self
+                            remotePeer.peripheralDelegate = self
+                            let new_device = BTDeviceInfo(peer: remotePeer, deviceid: uuid, updated: NSDate().timeIntervalSince1970)
+                            self.modelData?.detectedDevices.append(new_device)
+                            print("Discovery - new device: \(uuid))")
+                            // self.connect(insertedDiscovery.discovery.remotePeripheral)
+                        }
                     }
                 }
             }
-            
         }, stateHandler: { newState in
-            if let onStateChange = self.onStateChange, let model = self.modelData {
-                onStateChange(model, newState)
-            }
             if newState == .scanning {
                 // TODO: scanning...
                 print("Scanning for peripherals")
@@ -127,24 +102,14 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
     {
         central.connect(remotePeripheral: remotePeripheral) { remotePeripheral, error in
 
-            if let device = self.modelData?.BTDevice(remotePeripheral) {
-
-                guard error == nil else {
-                    print("Error connecting peripheral: \(String(describing: error))")
-                    // TODO: can't connect
-                    if device.state == .connecting {
-                        self.modelData?.BTDevice(remotePeripheral, setState: .disconnected)
-                    }
-                    return
-                }
-                print("Connected remote Peripheral")
-                self.modelData?.BTDevice(remotePeripheral, setState: .connected)
-                // self.sendcmd(remotePeripheral, cmd: "nm\(self.modelData!.nickname)")
+            // if let device = self.modelData?.BTDevice(remotePeripheral) {
+            guard error == nil else {
+                print("Error connecting peripheral: \(String(describing: error))")
+                // TODO: can't connect
+                return
             }
-            else {
-                //
-                print("Error: attempting to connect to device which is not detected?")
-            }
+            print("Connected remote Peripheral")
+            // self.sendcmd(remotePeripheral, cmd: "nm\(self.modelData!.nickname)")
         }
     }
     
@@ -153,7 +118,6 @@ class CentralDelegate : BKCentralDelegate, BKAvailabilityObserver
         print("Will disconnect remote Peripheral")
         do {
             try central.disconnectRemotePeripheral(remotePeripheral)
-            self.modelData?.BTDevice(remotePeripheral, setState: .disconnected)
         }
         catch {
             print("Disconnect error: \(error)")
@@ -191,24 +155,6 @@ extension CentralDelegate : BKRemotePeripheralDelegate, BKRemotePeerDelegate
     {
         print("Received data of length: \(data.count)")
         
-        // TODO: encrypt BT data
-        if let strid = String(data: data, encoding: .utf8) {
-            let index = strid.index(strid.startIndex, offsetBy: 2)
-            if strid[..<index] == "nm" {
-                let name = String(strid[index...])
-                if let modelData = self.modelData {
-                    modelData.BTDevice(remotePeer, setName: name)
-                    // the device is now configured
-                    modelData.BTDevice(remotePeer, setState: .configured)
-                    // send ID and local name back to peripheral
-                    let cmd = String("in\(modelData.localName())\(modelData.nickname)")
-                    self.sendcmd(remotePeer as! BKRemotePeripheral, cmd: cmd)
-                    
-                }
-                return
-            }
-            // TODO: process other commands
-        }
         // invalid data or already connected; disconnect
         print("Unknown data - disconnecting")
         disconnect(remotePeer as! BKRemotePeripheral)

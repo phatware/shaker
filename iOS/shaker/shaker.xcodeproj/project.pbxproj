@@ -53,6 +53,9 @@
 		F6BCC41A29372DF7008E20F4 /* IndexedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40D29372DF7008E20F4 /* IndexedScrollView.swift */; };
 		F6BCC41B29372DF7008E20F4 /* ScrollAccessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC40E29372DF7008E20F4 /* ScrollAccessory.swift */; };
 		F6BCC41D29385191008E20F4 /* CollasibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC41C29385191008E20F4 /* CollasibleSection.swift */; };
+		F6C1C13F2965629A009725E6 /* AsyncList.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C1C13E2965629A009725E6 /* AsyncList.swift */; };
+		F6C1C141296675DA009725E6 /* ListScrollingProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C1C140296675DA009725E6 /* ListScrollingProxy.swift */; };
+		F6C2F006295A3781000DBAE0 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C2F005295A3781000DBAE0 /* LoginView.swift */; };
 		F6D7B1EE293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1D8293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift */; };
 		F6D7B1EF293C2D2F00BCC446 /* BKDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1D9293C2D2F00BCC446 /* BKDiscovery.swift */; };
 		F6D7B1F0293C2D2F00BCC446 /* BKPeripheralStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D7B1DA293C2D2F00BCC446 /* BKPeripheralStateMachine.swift */; };
@@ -133,6 +136,9 @@
 		F6BCC40D29372DF7008E20F4 /* IndexedScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IndexedScrollView.swift; sourceTree = "<group>"; };
 		F6BCC40E29372DF7008E20F4 /* ScrollAccessory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollAccessory.swift; sourceTree = "<group>"; };
 		F6BCC41C29385191008E20F4 /* CollasibleSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollasibleSection.swift; sourceTree = "<group>"; };
+		F6C1C13E2965629A009725E6 /* AsyncList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncList.swift; sourceTree = "<group>"; };
+		F6C1C140296675DA009725E6 /* ListScrollingProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListScrollingProxy.swift; sourceTree = "<group>"; };
+		F6C2F005295A3781000DBAE0 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LoginView.swift; path = shaker/LoginView.swift; sourceTree = SOURCE_ROOT; };
 		F6D7B1D8293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKCBCentralManagerDelegateProxy.swift; sourceTree = "<group>"; };
 		F6D7B1D9293C2D2F00BCC446 /* BKDiscovery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKDiscovery.swift; sourceTree = "<group>"; };
 		F6D7B1DA293C2D2F00BCC446 /* BKPeripheralStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BKPeripheralStateMachine.swift; sourceTree = "<group>"; };
@@ -192,6 +198,7 @@
 				F658BD87292B04FD00837D1F /* utilities */,
 				F658BD632929F3B400837D1F /* SwiftUIMapView */,
 				F658BD532929C5B700837D1F /* shakerApp.swift */,
+				F6C2F005295A3781000DBAE0 /* LoginView.swift */,
 				F66164972949660900228691 /* PlayView.swift */,
 				F66164992949661C00228691 /* AccountView.swift */,
 				F661648F294447D900228691 /* CoctailsView.swift */,
@@ -243,6 +250,8 @@
 				F6BCC40029372DF7008E20F4 /* SwiftUIIndexedList */,
 				F658BD9A292DB70D00837D1F /* WatchConnect.swift */,
 				F658BD772929FBA900837D1F /* LocationService.swift */,
+				F6C1C13E2965629A009725E6 /* AsyncList.swift */,
+				F6C1C140296675DA009725E6 /* ListScrollingProxy.swift */,
 				F658BD83292A005E00837D1F /* UIAlertController+Progress.h */,
 				F658BD82292A005E00837D1F /* UIAlertController+Progress.m */,
 				F658BD97292DB6B400837D1F /* NSFileManager+Folder.h */,
@@ -419,6 +428,8 @@
 				F6BCC40F29372DF7008E20F4 /* Indexable.swift in Sources */,
 				F6D7B1EE293C2D2F00BCC446 /* BKCBCentralManagerDelegateProxy.swift in Sources */,
 				F6BCC41A29372DF7008E20F4 /* IndexedScrollView.swift in Sources */,
+				F6C2F006295A3781000DBAE0 /* LoginView.swift in Sources */,
+				F6C1C13F2965629A009725E6 /* AsyncList.swift in Sources */,
 				F6D7B1FC293C2D2F00BCC446 /* BKCBPeripheralDelegateProxy.swift in Sources */,
 				F661649E2949ABC300228691 /* BLEPeripheralDelegatge.swift in Sources */,
 				F6D7B202293C2D2F00BCC446 /* BKDiscoveriesChange.swift in Sources */,
@@ -441,6 +452,7 @@
 				F6D7B1EF293C2D2F00BCC446 /* BKDiscovery.swift in Sources */,
 				F658BD562929C5B700837D1F /* ContentView.swift in Sources */,
 				F6D7B1F2293C2D2F00BCC446 /* BKErrorDomain.swift in Sources */,
+				F6C1C141296675DA009725E6 /* ListScrollingProxy.swift in Sources */,
 				F658BD622929F31200837D1F /* MapContentView.swift in Sources */,
 				F658BD782929FBA900837D1F /* LocationService.swift in Sources */,
 				F658BD86292A1BBD00837D1F /* MapDetails.swift in Sources */,

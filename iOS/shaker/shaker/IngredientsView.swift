@@ -8,43 +8,21 @@
 import SwiftUI
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/// Ingredient, Identifiable, Hashable
-///
-struct Ingredient: Identifiable, Hashable
-{
-    let id = UUID()
-    let name: String
-    let rec_id: Int64
-    let used: Int
-    var enabled: Bool
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
-/// Ingredient Category, Identifiable, Hashable
-
-struct IngredientCategory : Identifiable, Hashable
-{
-    let id = UUID()
-    // var index: Index?
-    let name: String
-    let rec_id: Int64
-    var ingredients : [Ingredient] = []
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
 /// Recipe Row View
 
 struct RecipeRow: View
 {
     @EnvironmentObject var modelData: ShakerModel
     var rec_id: Int64
+    var alcohol: Bool
     
     private var name : String {
-        return modelData.recipeName(rec_id)
+        let info = modelData.recipeInfo(rec_id, alcohol: alcohol)
+        return info.name
     }
     
     var body: some View {
-        NavigationLink(destination: CoctailDetailsView(rec_id: rec_id, alcogol: true)) {
+        NavigationLink(destination: CoctailDetailsView(rec_id: rec_id, alcogol: alcohol)) {
             Text(name)
         }
     }
@@ -82,16 +60,25 @@ struct FilteredRecipesView: View
 {
     @EnvironmentObject var modelData: ShakerModel
     let ingredient : String
+    let alcohol: Bool
     
     private var filter: String {
         return "ingredients LIKE '%\(ingredient.sqlString)%'"
     }
     
     private var alcoholic: [Int64] {
-        return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: "name ASC", group: nil)[-1] as? [Int64] ?? []
+        let res = modelData.recipeList(true, sort: "name ASC", filter: self.filter)
+        if res.count > 0 {
+            return res[-1] ?? []
+        }
+        return []
     }
     private var non_alcoholic: [Int64] {
-        return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: "name ASC", group: nil)[-1] as? [Int64] ?? []
+        let res = modelData.recipeList(false, sort: "name ASC", filter: self.filter)
+        if res.count > 0 {
+            return res[-1] ?? []
+        }
+        return []
     }
     
     var body: some View {
@@ -102,7 +89,7 @@ struct FilteredRecipesView: View
                 if alco.count > 0 {
                     Section {
                         ForEach(alco, id: \.self) { rec_id in
-                            RecipeRow(rec_id: rec_id)
+                            RecipeRow(rec_id: rec_id, alcohol: alcohol)
                         }
                     } header: {
                         CoctailSectionHeader(title: "Alcoholic Beverages")
@@ -111,7 +98,7 @@ struct FilteredRecipesView: View
                 if free.count > 0 {
                     Section {
                         ForEach(free, id: \.self) { rec_id in
-                            RecipeRow(rec_id: rec_id)
+                            RecipeRow(rec_id: rec_id, alcohol: alcohol)
                         }
                     } header: {
                         CoctailSectionHeader(title: "Non-alcoholic Beverages")
@@ -131,6 +118,7 @@ struct IngredientRow: View
 {
     @EnvironmentObject var modelData: ShakerModel
     var ing: Ingredient
+    let alcohol: Bool
     
     var body: some View {
         var ebabled = ing.enabled
@@ -143,7 +131,7 @@ struct IngredientRow: View
             }
         } )
         
-        NavigationLink(destination: FilteredRecipesView(ingredient: ing.name)) {
+        NavigationLink(destination: FilteredRecipesView(ingredient: ing.name, alcohol: alcohol)) {
             VStack(alignment: .leading) {
                 Toggle(isOn: entoggle){
                     Text(ing.name)
@@ -172,6 +160,7 @@ struct IngredientsView: View
     @State private var order = OrderSelector.decending
     @State private var searchText = ""
     @State private var showall = true
+    @State private var alcohol = true
     
     enum OrderSelector: String, CaseIterable, Identifiable {
         case ascending = "Ascending Order"
@@ -193,29 +182,8 @@ struct IngredientsView: View
     }
 
     private var categories: [IngredientCategory] {
-        let data = modelData.database.inredientsCategories() as? [NSDictionary] ?? []
-        var result: [IngredientCategory] = []
-        for category in data {
-            var ic = IngredientCategory(name: category["category"] as? String ?? "",
-                                        rec_id: category["id"] as? Int64 ?? 0)
-            
-            if let subitems = modelData.database.inredients(forCategory: ic.rec_id,
-                                                            showall: showall,
-                                                            filter: self.filter,
-                                                            sort: self.sort) as? [NSDictionary] {
-                for sitem in subitems {
-                    let i = Ingredient(name: sitem["name"] as? String ?? "",
-                                       rec_id: sitem["id"] as? Int64 ?? 0,
-                                       used: sitem["used"] as? Int ?? 0,
-                                       enabled: sitem["enabled"] as? Bool ?? false)
-                    ic.ingredients.append(i)
-                }
-            }
-            if ic.ingredients.count > 0 {
-                result.append(ic)
-            }
-        }
-        return result
+        
+        return modelData.ingredients(showall: self.showall, sort: self.sort, filter: self.filter)
     }
     
     var body: some View {
@@ -225,7 +193,7 @@ struct IngredientsView: View
                     ForEach(categories, id: \.self) { category in
                         CollapsibleSection(title: category.name, setExpanded: true) {
                             ForEach(category.ingredients, id: \.self) { ing in
-                                IngredientRow(ing: ing)
+                                IngredientRow(ing: ing, alcohol: alcohol)
                             }
                         }
                     }

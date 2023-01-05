@@ -34,11 +34,11 @@ typedef enum
 - (nullable NSDictionary *) getRecipe:(sqlite3_int64)record_id alcohol:(BOOL)alcohol noImage:(BOOL)noImage;
 
 - (sqlite3_int64) getUnlockedRecipeCount:(BOOL)alcohol;
-- (nonnull NSDictionary<NSNumber *, NSArray<NSNumber *> *> * ) getUnlockedRecordList:(BOOL)alcohol filter:(nullable NSString * )filter sort:(nonnull NSString *)sort group:(nullable NSString *)group;
+- (nonnull NSDictionary<NSNumber *, NSArray<NSNumber *> *> * ) getUnlockedRecordList:(BOOL)alcohol filter:(nullable NSString * )filter sort:(nonnull NSString *)sort group:(nullable NSString *)group range:(NSRange)range;
 - (nullable NSArray *) getFavorites:(BOOL)like all:(BOOL)all isAlcogol:(BOOL)alcohol;
 - (nullable NSDictionary *) getRecipeName:(sqlite3_int64)record_id alcohol:(BOOL)alcohol;
 
-- (nullable NSArray <NSDictionary *> *) inredientsCategories;
+- (nullable NSArray <NSDictionary *> *) ingredientsCategories;
 - (nonnull NSString *) categoryName:(sqlite3_int64)cid;
 - (nonnull NSString *) glassName:(sqlite3_int64)gid;
 - (nullable NSArray <NSDictionary *> *) inredientsForCategory:(sqlite3_int64)category_id showall:(BOOL)showall filter:(nullable NSString *)filter sort:(nullable NSString *)sort;

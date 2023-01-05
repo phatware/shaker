@@ -58,7 +58,6 @@ struct ContentView: View
         }
         .navigationTitle("Shaker")
         .onAppear() {
-            modelData.central.startCentral(modelData)
         }
     }
 }

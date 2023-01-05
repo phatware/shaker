@@ -16,81 +16,44 @@ enum SearchScope: String, CaseIterable
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/// Coctail Details, Identifiable
-
-struct CoctailDetails: Identifiable
-{
-    let id = UUID()
-    let name: String
-    let category: String
-    let rec_id: Int64
-    let rating: Int
-    let enabled: Bool
-    let glass: String
-    let shopping: String
-    // extended optional fileds
-    let ingredients: String?
-    let instructions: String?
-    let user_rec_id: Int64
-    let user_rating: String?
-    let note: String?
-    let photo: Image?
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
 /// Coctail Row View
 
 struct CoctailRow: View
 {
     @EnvironmentObject var modelData: ShakerModel
     var rec_id: Int64
+    let alcohol: Bool
     
     private var coctail : CoctailDetails {
-        
-        let info  = modelData.database.getRecipeName(rec_id, alcohol: true) as? [String:Any]
-        let c = CoctailDetails(name: info?["name"] as? String ?? "(Unknown)",
-                               category: info?["category"] as? String ?? "",
-                               rec_id: rec_id,
-                               rating: info?["rating"] as? Int ?? 0,
-                               enabled: info?["enabled"] as? Bool ?? false,
-                               glass: info?["glass"] as? String ?? "",
-                               shopping: info?["shopping"] as? String ?? "",
-                               ingredients: nil,
-                               instructions: nil,
-                               user_rec_id: -1,
-                               user_rating: nil,
-                               note: nil,
-                               photo: nil)
-        return c
+        return modelData.recipeDetails(rec_id, alcohol: alcohol, includeImage: false)
     }
     
     var body: some View {
-        NavigationLink {
-            CoctailDetailsView(rec_id: rec_id, alcogol: true)
-
-        } label: {
+        NavigationLink(destination: CoctailDetailsView(rec_id: rec_id, alcogol: alcohol))
+        {
+            let c = self.coctail
             HStack {
                 VStack(alignment: .leading) {
-                    Text(coctail.name)
+                    Text(c.name)
                         .foregroundColor(.black)
                         .font(.title3)
-                    Text("\(coctail.category) served in a \(coctail.glass)")
+                    Text("\(c.category) served in a \(c.glass)")
                         .foregroundColor(.black)
                         .font(.footnote)
                 }
                 Spacer()
-                if coctail.rating == 0 {
+                if c.rating == 0 {
                     Text("0☆")
                         .font(.title2)
                         .foregroundColor(.gray)
                 }
                 else {
-                    Text(String(format:"%.1f⭐️", coctail.rating))
+                    Text(String(format:"%.1f⭐️", c.rating))
                         .font(.title2)
                 }
             }
+            .searchCompletion(c.name)
         }
-        .searchCompletion(coctail.name)
     }
 }
 
@@ -181,7 +144,7 @@ struct CoctailsView: View
         case .glass:
             group = "glass_id"
         }
-        return modelData.database.getUnlockedRecordList(true, filter: self.filter, sort: self.sort, group: group) as? [Int64:[Int64]] ?? [:]
+        return modelData.recipeList(true, sort: "name ASC", filter: self.filter, group: group)
     }
     private var non_alcoholic: [Int64:[Int64]] {
         var group: String? = nil
@@ -193,12 +156,12 @@ struct CoctailsView: View
         case .glass:
             group = "glass_id"
         }
-        return modelData.database.getUnlockedRecordList(false, filter: self.filter, sort: self.sort, group: group) as? [Int64:[Int64]] ?? [:]
+        return modelData.recipeList(false, sort: "name ASC", filter: self.filter, group: group)
     }
     
     var body: some View {
-        VStack {
-            NavigationView {
+        NavigationView {
+            VStack {
                 List {
                     let drinks = alcoholic
                     switch(self.groupby) {
@@ -206,18 +169,20 @@ struct CoctailsView: View
                         if showna {
                             CollapsibleSection(title: "Alcoholic Beverages", setExpanded: true) {
                                 ForEach(drinks[-1]!, id: \.self) { rec_id in
-                                    RecipeRow(rec_id: rec_id)
+                                    RecipeRow(rec_id: rec_id, alcohol: true)
                                 }
                             }
                             CollapsibleSection(title: "Alcohol-free Beverages", setExpanded: true) {
                                 ForEach(non_alcoholic[-1]!, id: \.self) { rec_id in
-                                    RecipeRow(rec_id: rec_id)
+                                    RecipeRow(rec_id: rec_id, alcohol: false)
                                 }
                             }
                         }
                         else {
-                            ForEach(drinks[-1]!, id: \.self) { rec_id in
-                                CoctailRow(rec_id: rec_id)
+                            if drinks.count > 0 {
+                                ForEach(drinks[-1]!, id: \.self) { rec_id in
+                                    CoctailRow(rec_id: rec_id, alcohol: true)
+                                }
                             }
                         }
                         
@@ -227,7 +192,7 @@ struct CoctailsView: View
                             let cat = modelData.database.categoryName(key)
                             CollapsibleSection(title: cat, setExpanded: true) {
                                 ForEach(drinks[key]!, id: \.self) { rec_id in
-                                    RecipeRow(rec_id: rec_id)
+                                    RecipeRow(rec_id: rec_id, alcohol: true)
                                 }
                             }
                         }
@@ -238,7 +203,7 @@ struct CoctailsView: View
                             let glass = modelData.database.glassName(key)
                             CollapsibleSection(title: glass, setExpanded: true) {
                                 ForEach(drinks[key]!, id: \.self) { rec_id in
-                                    RecipeRow(rec_id: rec_id)
+                                    RecipeRow(rec_id: rec_id, alcohol: true)
                                 }
                             }
                         }

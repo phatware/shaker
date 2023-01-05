@@ -253,11 +253,13 @@
     return selectedRecords;
 }
 
-- (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *) getUnlockedRecordList:(BOOL)alcohol filter:(NSString *)filter sort:(NSString *)sort group:(NSString *)group
+- (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *) getUnlockedRecordList:(BOOL)alcohol filter:(NSString *)filter sort:(NSString *)sort group:(NSString *)group range:(NSRange)range
 {
     sqlite3_int64 count = [self getUnlockedRecipeCount:alcohol];
     if (count < 1)
         return [NSDictionary dictionary];
+    
+    NSTimeInterval ts = [NSDate timeIntervalSinceReferenceDate];
     
     // build SQL statment
     NSString *	strSQL = @"SELECT record_id";
@@ -287,7 +289,10 @@
         strSQL = [strSQL stringByAppendingString:@" ASC, "];
     }
     strSQL = [strSQL stringByAppendingString:sort];
-
+    if (range.length > 0)
+    {
+        strSQL = [strSQL stringByAppendingFormat:@" LIMIT %lu, %lu", (unsigned long)range.location, (unsigned long)range.length];
+    }
 
     NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
     @autoreleasepool
@@ -332,6 +337,8 @@
         }
         sqlite3_finalize( statement );
     }
+    ts = [NSDate timeIntervalSinceReferenceDate] - ts;
+    NSLog( @"SQL database load time %f", ts );
     return (NSDictionary<NSNumber *, NSArray<NSNumber *> *> *)result;
 }
 
@@ -596,7 +603,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
     return (NSArray *)array;
 }
 
-- (NSArray <NSDictionary *> *) inredientsCategories
+- (NSArray <NSDictionary *> *) ingredientsCategories
 {
     sqlite3_int64 count = [self getItemCount:@"ingredient_types" filter:nil];
     if ( count < 1 )

@@ -29,40 +29,7 @@ struct CoctailDetailsView: View {
     var alcogol: Bool
 
     private var coctail : CoctailDetails {
-        
-        let info  = modelData.database.getRecipe(rec_id, alcohol: alcogol, noImage: false) as? [String:Any]
-        
-        let rating = info?["userrating"] as? Int ?? (info?["rating"] as? Int ?? 0)
-        let star = "★"
-        let star_part = "✩"
-        var rstr = ""
-        if rating < 1 {
-            rstr = "Not rated yet"
-        }
-        else {
-            for _ in 0..<rating {
-                rstr += star
-            }
-            for _ in rating..<10 {
-                rstr += star_part
-            }
-        }
-        
-        let c = CoctailDetails(name: info?["name"] as? String ?? "(Unknown)",
-                               category: info?["category"] as? String ?? "",
-                               rec_id: rec_id,
-                               rating: rating,
-                               enabled: info?["enabled"] as? Bool ?? false,
-                               glass: info?["glass"] as? String ?? "",
-                               shopping: info?["shopping"] as? String ?? "",
-                               ingredients: info?["ingredients"] as? String ?? "",
-                               instructions: info?["instructions"] as? String ?? "",
-                               user_rec_id: info?["userrecord_id"] as? Int64 ?? 0,
-                               user_rating: rstr,
-                               note: info?["note"] as? String ?? "",
-                               photo: info?["photo"] as? Image ?? nil)
-        
-        return c
+        return modelData.recipeDetails(rec_id, alcohol: alcogol, includeImage: true)
     }
     
     

@@ -7,14 +7,18 @@
 
 import Foundation
 import CoreBluetooth
+import SwiftUI
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// BT Info
 
 struct BTDeviceInfo {
     
     enum BTDeviceState {
-        case disconnected, connecting, connected, ignored, configured
+        case detected, ignored, configured
     }
     
-    var state: BTDeviceState = .disconnected;
+    var state: BTDeviceState = .detected;
     
     var peer: BKRemotePeer
     var deviceid: UUID
@@ -22,52 +26,174 @@ struct BTDeviceInfo {
     var updated: TimeInterval = 0.0
 }
 
-func onStateChange(_ model: ShakerModel, state: BKCentral.ContinuousScanState) -> Void
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Coctail Details, Identifiable
+
+struct CoctailDetails: Identifiable
 {
-    // TODO: scanning state changed - stop/start peripheral? is this a good place?
-    print("BLE scan state: \(state)")
-    switch state {
-    case .waiting:
-        Task.detached(operation: {
-            model.peripheral.startPeripheral(model)
-        })
-        break
-    case .scanning:
-        Task.detached(operation: {
-            model.peripheral.stop()
-        })
-        break
-    case .stopped:
-        Task.detached(operation: {
-            model.peripheral.stop()
-        })
-        break
-    }
+    let id = UUID()
+    let name: String
+    let category: String
+    let rec_id: Int64
+    let rating: Int
+    let enabled: Bool
+    let glass: String
+    let shopping: String
+    // extended optional fileds
+    let ingredients: String?
+    let instructions: String?
+    let user_rec_id: Int64
+    let user_rating: String?
+    let note: String?
+    let photo: Image?
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Ingredient, Identifiable, Hashable
+///
+struct Ingredient: Identifiable, Hashable
+{
+    let id = UUID()
+    let name: String
+    let rec_id: Int64
+    let used: Int
+    var enabled: Bool
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Ingredient Category, Identifiable, Hashable
+
+struct IngredientCategory : Identifiable, Hashable
+{
+    let id = UUID()
+    // var index: Index?
+    let name: String
+    let rec_id: Int64
+    var ingredients : [Ingredient] = []
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Shaker Model
 
 final class ShakerModel: ObservableObject
 {
     @Published var database: CoctailsDatabase = load()
     @Published var deviceid: String = makeid()
     @Published var detectedDevices: [BTDeviceInfo] = []
-    @Published var nickname: String = "<Unique_name>"
-    @Published var central = CentralDelegate(onStateChange: onStateChange)
+    @Published var nickname: String = "<Unknown>"
+    @Published var central = CentralDelegate()
     @Published var peripheral = PeripheralDelegatge()
     
     public static let REMOTEID_PREFIX: String = "C2DA0000"
     public static let REMOTE_TIMEOUT:  TimeInterval = 60
     
-    public func recipeName(_ rec_id: Int64, alcohol: Bool = true) -> String
+    init()
     {
-        return database.getRecipeName(rec_id, alcohol: alcohol)?["name"] as? String ?? "<Unknown>"
+        Task {
+            try await Task.sleep(nanoseconds: UInt64(1.0 * Double(NSEC_PER_SEC)))
+            central.startCentral(self)
+            peripheral.startPeripheral(self)
+        }
     }
     
+    // database functions
+    
+    public func recipeDetails(_ rec_id: Int64, alcohol: Bool, includeImage: Bool) -> CoctailDetails
+    {
+        let info  = self.database.getRecipe(rec_id, alcohol: alcohol, noImage: !includeImage) as? [String:Any]
+        
+        let rating = info?["userrating"] as? Int ?? (info?["rating"] as? Int ?? 0)
+        let star = "★"
+        let star_part = "✩"
+        var rstr = ""
+        if rating < 1 {
+            rstr = "Not rated yet"
+        }
+        else {
+            for _ in 0..<rating {
+                rstr += star
+            }
+            for _ in rating..<10 {
+                rstr += star_part
+            }
+        }
+        
+        let c = CoctailDetails(name: info?["name"] as? String ?? "(Unknown)",
+                               category: info?["category"] as? String ?? "",
+                               rec_id: rec_id,
+                               rating: rating,
+                               enabled: info?["enabled"] as? Bool ?? false,
+                               glass: info?["glass"] as? String ?? "",
+                               shopping: info?["shopping"] as? String ?? "",
+                               ingredients: info?["ingredients"] as? String ?? "",
+                               instructions: info?["instructions"] as? String ?? "",
+                               user_rec_id: info?["userrecord_id"] as? Int64 ?? 0,
+                               user_rating: rstr,
+                               note: info?["note"] as? String ?? "",
+                               photo: info?["photo"] as? Image ?? nil)
+        
+        return c
+    }
+    
+    public func recipeInfo(_ rec_id: Int64, alcohol: Bool) -> CoctailDetails
+    {
+        let info  = self.database.getRecipeName(rec_id, alcohol: alcohol) as? [String:Any]
+        let c = CoctailDetails(name: info?["name"] as? String ?? "(Unknown)",
+                               category: info?["category"] as? String ?? "",
+                               rec_id: rec_id,
+                               rating: info?["rating"] as? Int ?? 0,
+                               enabled: info?["enabled"] as? Bool ?? false,
+                               glass: info?["glass"] as? String ?? "",
+                               shopping: info?["shopping"] as? String ?? "",
+                               ingredients: nil,
+                               instructions: nil,
+                               user_rec_id: -1,
+                               user_rating: nil,
+                               note: nil,
+                               photo: nil)
+        return c
+    }
+    
+    public func recipeList(_ alcohol: Bool, sort: String, filter: String? = nil, group: String? = nil) -> [Int64:[Int64]]
+    {
+        return self.database.getUnlockedRecordList(alcohol, filter: filter, sort: sort, group: group, range: NSMakeRange(0, 0)) as? [Int64:[Int64]] ?? [:]
+    }
+    
+    public func ingredients(showall: Bool, sort: String, filter: String? = nil) -> [IngredientCategory]
+    {
+        let data = self.database.ingredientsCategories() as? [NSDictionary] ?? []
+        var result: [IngredientCategory] = []
+        for category in data {
+            var ic = IngredientCategory(name: category["category"] as? String ?? "",
+                                        rec_id: category["id"] as? Int64 ?? 0)
+            
+            if let subitems = self.database.inredients(forCategory: ic.rec_id,
+                                                       showall: showall,
+                                                       filter: filter,
+                                                       sort: sort) as? [NSDictionary] {
+                for sitem in subitems {
+                    let i = Ingredient(name: sitem["name"] as? String ?? "",
+                                       rec_id: sitem["id"] as? Int64 ?? 0,
+                                       used: sitem["used"] as? Int ?? 0,
+                                       enabled: sitem["enabled"] as? Bool ?? false)
+                    ic.ingredients.append(i)
+                }
+            }
+            if ic.ingredients.count > 0 {
+                result.append(ic)
+            }
+        }
+        return result
+    }
+        
     public func localName() -> String
     {
         let index: String.Index = self.deviceid.index(self.deviceid.startIndex, offsetBy: 8)
         let localName = String(self.deviceid[index...]).replacingOccurrences(of: "-", with: "")  // Unique device ID - make it 24 chars long
         return localName
     }
+    
+    // BT functions
     
     public func BTDeleteExpired()
     {
@@ -113,11 +239,6 @@ final class ShakerModel: ObservableObject
     {
         for index in 0..<detectedDevices.count {
             if detectedDevices[index].peer == remote {
-                if (detectedDevices[index].state == .ignored || detectedDevices[index].state == .configured)
-                    && (setState == .disconnected || setState == .connected) {
-                    // do not set disconnected state if device is already in the configured or ignored state
-                    continue
-                }
                 detectedDevices[index].state = setState
                 detectedDevices[index].updated = NSDate().timeIntervalSince1970
                 break
