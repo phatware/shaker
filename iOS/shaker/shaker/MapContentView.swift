@@ -88,7 +88,7 @@ struct MapContentView: View {
 struct MapContentView_Previews: PreviewProvider {
     
     static var previews: some View {
-        ContentView()
+        MapContentView()
     }
     
 }

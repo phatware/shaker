@@ -875,6 +875,8 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
         const char * ingredients_table= "CREATE TABLE ingredients( record_id integer PRIMARY KEY NOT NULL, item text, used integer, options "
                                         "integer, enabled boolean, enabled_default boolean, category_id integer, created integer, modified integer );";
         const char * ingr_types_table = "CREATE TABLE ingredient_types ( 'record_id' INTEGER PRIMARY KEY, category TEXT, category_id integer, created integer, modified integer );";
+        const char * dbstate_table =    "CREATE TABLE dbstate ( 'record_id' INTEGER PRIMARY KEY, system_sync_time integer, user_sync_time integer );";
+        const char * dbstate =          "INSERT INTO dbstate (system_sync_time, user_sync_time) VALUES (%llu, %llu);";
         const char * types[] = {
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Vodka', 1, %llu, %llu);",
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Gin', 2, %llu, %llu);",
@@ -916,15 +918,22 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
         rc = sqlite3_exec(pDb, ingr_types_table, NULL, NULL, NULL);
         if (SQLITE_OK != rc)
             goto error;
+        rc = sqlite3_exec(pDb, dbstate_table, NULL, NULL, NULL);
+        if (SQLITE_OK != rc)
+            goto error;
 
-        char insert_type[256];
+        char temp[256];
         for (size_t i = 0; i < type_cnt; i++)
         {
-            sprintf(insert_type, types[i], now, now);
-            rc = sqlite3_exec(pDb, insert_type, NULL, NULL, NULL);
+            sprintf(temp, types[i], now, now);
+            rc = sqlite3_exec(pDb, temp, NULL, NULL, NULL);
             if (SQLITE_OK != rc)
                 goto error;
         }
+        sprintf(temp, dbstate, now, now);
+        rc = sqlite3_exec(pDb, temp, NULL, NULL, NULL);
+        if (SQLITE_OK != rc)
+            goto error;
     }
     else
     {
@@ -1778,6 +1787,12 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                                 [itemString appendString:@", "];
                             [itemString appendString:i];
                             [itemArray addObject:[NSNumber numberWithLongLong:item_id]];
+                            // TODO: maybe skip this row for now, could be a bad recipe
+                        }
+                        else
+                        {
+                            [itemArray removeAllObjects];
+                            break;
                         }
                     }
                     
