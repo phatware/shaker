@@ -1,0 +1,12 @@
+Hello ${NAME},
+
+Your contact wants to send you a file using Shaker app. Download Shaker free at
+
+${PAYLOAD}
+
+If you have any questions about this email, please contact us at info@phatware.com
+
+Best Regards,
+
+Shaker Team
+http://shaker.phatware.com

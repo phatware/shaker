@@ -1,0 +1,12 @@
+Hello ${NAME},
+
+Thank you for using Shaker. Please click on the link below to activate your new account.
+
+${PAYLOAD}
+
+If you have any questions about this email, please contact us at shaker@phatware.com
+
+Best Regards,
+
+Shaker Team
+http://shaker.phatware.com

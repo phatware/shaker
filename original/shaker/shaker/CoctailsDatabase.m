@@ -145,7 +145,7 @@
 
 - (NSArray *) getFavorites:(BOOL)like all:(BOOL)all isAlcogol:(BOOL)alcohol
 {
-    NSString *	strSQL = [NSString stringWithFormat:@"SELECT record_id, user_id, name, shopping FROM %@ WHERE unlocked=1 ORDER BY name ASC", (alcohol ? @"harddrinks" : @"softdrinks")];
+    NSString *	strSQL = [NSString stringWithFormat:@"SELECT record_id, user_id, name, shopping FROM %@ WHERE unlocked=1 ORDER BY name ASC", (alcohol ? @"hard_drinks" : @"soft_drinks")];
     NSMutableArray * array = [[NSMutableArray alloc] init];
 
     sqlite3_stmt *	statement = NULL;
@@ -269,7 +269,7 @@
     
     NSString *	strSQL = [NSString stringWithFormat:@"SELECT record_id%@ FROM %@",
                           (addName) ? @", name" : @"",
-                          (alcohol ? @"harddrinks" : @"softdrinks")];
+                          (alcohol ? @"hard_drinks" : @"soft_drinks")];
     if ( (! self.unlocked) || filter != nil )
     {
         strSQL = [strSQL stringByAppendingString:@" WHERE "];
@@ -320,7 +320,7 @@
 
 - (sqlite3_int64) getUnlockedRecipeCount:(BOOL)alcohol
 {
-    NSString * tableName = alcohol ? @"harddrinks" : @"softdrinks";
+    NSString * tableName = alcohol ? @"hard_drinks" : @"soft_drinks";
     if ( self.unlocked )
         return [self getItemCount:tableName filter:nil];
     return [self getItemCount:tableName filter:@"unlocked=1"];
@@ -364,13 +364,13 @@
     self.gamefilter = kGameFilterDefault;
     self.unlocked = NO;
 
-    adrinks_count = [self getItemCount:@"harddrinks" filter:nil];
+    adrinks_count = [self getItemCount:@"hard_drinks" filter:nil];
     
 #ifndef IMPORT_FROM_CSV
     self.wconnect = [[WatchConnect alloc] initWithDatabase:self];
 #endif // IMPORT_FROM_CSV
     
-    sdrinks_count = [self getItemCount:@"softdrinks" filter:nil];
+    sdrinks_count = [self getItemCount:@"soft_drinks" filter:nil];
     srand ( (unsigned int)time(NULL) );
     return YES;
 }
@@ -613,7 +613,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
             }
             
             const char *	sql = [[NSString stringWithFormat:@"SELECT shopping_ids FROM %@ WHERE record_id = %lld AND enabled = 1",
-                                    (alcohol ? @"harddrinks" : @"softdrinks"), randomID] UTF8String];
+                                    (alcohol ? @"hard_drinks" : @"soft_drinks"), randomID] UTF8String];
             sqlite3_stmt *	statement = NULL;
 
             if ( sqlite3_prepare_v2(sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
@@ -622,24 +622,37 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
                 {
                     const void * data_ptr = sqlite3_column_blob( statement, 0 );
                     int data_len = sqlite3_column_bytes( statement, 0 );
-                    if ( data_ptr != NULL && data_len > 0 )
+                    uint64_t * items = (uint64_t *)data_ptr;
+                    data_len = data_len/sizeof(uint64_t);
+                    if (items != NULL && data_len > 0)
                     {
-                        NSData * dataIDs = [NSData dataWithBytes:data_ptr length:data_len];
-                        NSError * err = nil;
-                        NSArray<NSNumber *> * ids = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray<NSNumber *> class] fromData:dataIDs error:&err];
-                        if (ids != nil)
+                        NSMutableArray<NSNumber *> * ids = [NSMutableArray array];
+                        for (int i = 0; i < data_len; i++)
+                            [ids addObject:@(items[i])];
+                        if ( [self areAllIngredientsEnabled:ids] )
                         {
-                            if ( [self areAllIngredientsEnabled:ids] )
-                            {
-                                record_id = randomID;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            NSLog(@"unarchivedObjectOfClass failed with error: %@", err);
+                            record_id = randomID;
+                            break;
                         }
                     }
+                    
+//                    {
+//                        NSData * dataIDs = [NSData dataWithBytes:data_ptr length:data_len];
+//                        NSError * err = nil;
+//                        NSArray<NSNumber *> * ids = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSArray<NSNumber *> class] fromData:dataIDs error:&err];
+//                        if (ids != nil)
+//                        {
+//                            if ( [self areAllIngredientsEnabled:ids] )
+//                            {
+//                                record_id = randomID;
+//                                break;
+//                            }
+//                        }
+//                        else
+//                        {
+//                            NSLog(@"unarchivedObjectOfClass failed with error: %@", err);
+//                        }
+//                    }
                 }
                 sqlite3_finalize( statement );
             }
@@ -655,7 +668,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 
 - (NSDictionary *) getRecipeName:(sqlite3_int64)record_id alcohol:(BOOL)alcohol
 {
-    NSString *   strTable = (alcohol ? @"harddrinks" : @"softdrinks");
+    NSString *   strTable = (alcohol ? @"hard_drinks" : @"soft_drinks");
     NSString *   sql = [NSString stringWithFormat:@"SELECT name, enabled, shopping, category, glass, rating FROM %@ INNER JOIN categories ON (%@.category_id = categories.crecord_id) INNER JOIN glasses ON (%@.glass_id = glasses.grecord_id) WHERE record_id = %lld", strTable, strTable, strTable, record_id];
     
     sqlite3_stmt *	statement = NULL;
@@ -694,7 +707,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 
 - (UIImage *) getPhoto:(sqlite3_int64)record_id alcohol:(BOOL)alcohol
 {
-    const char *	sql = [[NSString stringWithFormat:@"SELECT user_id FROM %@ WHERE record_id = %lld", (alcohol ? @"harddrinks" : @"softdrinks"), record_id] UTF8String];
+    const char *	sql = [[NSString stringWithFormat:@"SELECT user_id FROM %@ WHERE record_id = %lld", (alcohol ? @"hard_drinks" : @"soft_drinks"), record_id] UTF8String];
     sqlite3_stmt *	statement = NULL;
     UIImage *       result = nil;
     
@@ -752,7 +765,7 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
 
 - (NSDictionary *) getRecipe:(sqlite3_int64)record_id alcohol:(BOOL)alcohol noImage:(BOOL)noImage
 {
-    NSString *      strTable = (alcohol ? @"harddrinks" : @"softdrinks");
+    NSString *      strTable = (alcohol ? @"hard_drinks" : @"soft_drinks");
     const char *	sql = [[NSString stringWithFormat:@"SELECT name, ingredients, instructions, shopping, rating, shopcount, user_id, unlocked, category, glass FROM %@ INNER JOIN categories ON (%@.category_id = categories.crecord_id) INNER JOIN glasses ON (%@.glass_id = glasses.grecord_id) WHERE record_id = %lld",
                             strTable, strTable, strTable, record_id] UTF8String];
     
@@ -860,12 +873,12 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
     {
         // create tables
         sqlite3_int64 now = (sqlite3_int64)(NSTimeIntervalSince1970 + [NSDate timeIntervalSinceReferenceDate]);
-        const char * harddrinks_table = "CREATE TABLE harddrinks( record_id integer PRIMARY KEY NOT NULL, name text, "
+        const char * harddrinks_table = "CREATE TABLE hard_drinks( record_id integer PRIMARY KEY NOT NULL, name text, "
                                         "ingredients text, instructions text, rating integer, comments text, user_id integer, "
                                         "shopping text, category_id integer, shopcount integer, glass_id integer, shopping_ids "
                                         "blob, enabled boolean, unlocked boolean, created integer, modified integer, FOREIGN KEY(glass_id) REFERENCES "
                                         "glasses(grecord_id), FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );";
-        const char * softdrinks_table = "CREATE TABLE softdrinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, "
+        const char * softdrinks_table = "CREATE TABLE soft_drinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, "
                                         "instructions text, rating integer, comments text, user_id integer, shopping text, category_id "
                                         "integer, shopcount integer, glass_id integer, shopping_ids blob, enabled boolean, unlocked "
                                         "boolean, created integer, modified integer, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), "
@@ -874,10 +887,10 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
         const char * categories_table = "CREATE TABLE categories( crecord_id integer PRIMARY KEY NOT NULL, category text, count integer, created integer, modified integer );";
         const char * ingredients_table= "CREATE TABLE ingredients( record_id integer PRIMARY KEY NOT NULL, item text, used integer, options "
                                         "integer, enabled boolean, enabled_default boolean, category_id integer, created integer, modified integer );";
-        const char * ingr_types_table = "CREATE TABLE ingredient_types ( 'record_id' INTEGER PRIMARY KEY, category TEXT, category_id integer, created integer, modified integer );";
-        const char * dbstate_table =    "CREATE TABLE dbstate ( 'record_id' INTEGER PRIMARY KEY, system_sync_time integer, user_sync_time integer );";
+        const char * ingr_types_table = "CREATE TABLE ingredient_types ( record_id INTEGER PRIMARY KEY NOT NULL, category TEXT, category_id integer, created integer, modified integer );";
+        const char * dbstate_table =    "CREATE TABLE dbstate ( record_id INTEGER PRIMARY KEY NOT NULL, system_sync_time integer, user_sync_time integer );";
         const char * dbstate =          "INSERT INTO dbstate (system_sync_time, user_sync_time) VALUES (%llu, %llu);";
-        const char * types[] = {
+        const char * categories[] = {
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Vodka', 1, %llu, %llu);",
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Gin', 2, %llu, %llu);",
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Rum', 3, %llu, %llu);",
@@ -896,9 +909,9 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Fruit / Berries / Nuts', 14, %llu, %llu);",
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Jello / Puree / Sweetener', 17, %llu, %llu);",
             "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Garnish / Spice / Sauce', 15, %llu, %llu);",
-            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Miscellaneous', 16, %llu, %llu);"
+            "INSERT INTO ingredient_types (category, category_id, created, modified) VALUES ('Other / Miscellaneous', 16, %llu, %llu);"
         };
-        const size_t type_cnt = sizeof(types)/sizeof(types[0]);
+        const size_t category_cnt = sizeof(categories)/sizeof(categories[0]);
 
         rc = sqlite3_exec(pDb, harddrinks_table, NULL, NULL, NULL);
         if (SQLITE_OK != rc)
@@ -923,9 +936,9 @@ BOOL check_record_in_records( sqlite3_int64 record, sqlite3_int64 * records )
             goto error;
 
         char temp[256];
-        for (size_t i = 0; i < type_cnt; i++)
+        for (size_t i = 0; i < category_cnt; i++)
         {
-            sprintf(temp, types[i], now, now);
+            sprintf(temp, categories[i], now, now);
             rc = sqlite3_exec(pDb, temp, NULL, NULL, NULL);
             if (SQLITE_OK != rc)
                 goto error;
@@ -1059,14 +1072,14 @@ error:
     const char *	sql = [[NSString stringWithFormat:@"SELECT record_id, enabled_default, used FROM ingredients where item = \"%@\" COLLATE NOCASE", item] UTF8String];
     sqlite3_stmt *	statement = NULL;
     int enable = 0, used = 0;
-    if ( sqlite3_prepare_v2(  sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK )
+    if (sqlite3_prepare_v2(sqlDatabaseRef, sql, -1, &statement, NULL) == SQLITE_OK)
     {
         // We "step" through the results - once for each row
-        if ( sqlite3_step(statement) == SQLITE_ROW )
+        if (sqlite3_step(statement) == SQLITE_ROW)
         {
-            record_id = sqlite3_column_int( statement, 0 );
-            enable = sqlite3_column_int( statement, 1 );
-            used = sqlite3_column_int( statement, 2 );
+            record_id = sqlite3_column_int(statement, 0);
+            enable = sqlite3_column_int(statement, 1);
+            used = sqlite3_column_int(statement, 2);
         }
         sqlite3_finalize( statement );
         if ( record_id >= 0 )
@@ -1148,7 +1161,7 @@ error:
         {
             const unsigned char * name = sqlite3_column_text( statement, 0 );
             sqlite3_int64 recid = sqlite3_column_int( statement, 1 );
-            int cat = 0;
+            int cat = 16;
             if ( name != NULL )
             {
                 NSString * item = [NSString stringWithUTF8String:(char *)name];
@@ -1190,6 +1203,18 @@ error:
                 {
                     cat = 10;
                 }
+                else if ( [item containsString:@"creme"] )
+                {
+                    cat = 18;
+                }
+                else if ( [item containsString:@"double creme"] )
+                {
+                    cat = 18;
+                }
+                else if ( [item containsString:@"single creme"] )
+                {
+                    cat = 18;
+                }
                 else
                 {
                     NSArray * names = [item componentsSeparatedByString:@" "];
@@ -1199,6 +1224,10 @@ error:
                         {
                             cat = 8;
                             break;
+                        }
+                        if ( [n isEqualToString:@"soju"] )
+                        {
+                            cat = 8;
                         }
                         if ( [n isEqualToString:@"absinthe"] )
                         {
@@ -1220,7 +1249,33 @@ error:
                             cat = 10;
                             break;
                         }
+                        if ( [n isEqualToString:@"tea"] )
+                        {
+                            cat = 18;
+                        }
+                        if ( [n isEqualToString:@"water"] )
+                        {
+                            cat = 18;
+                        }
+                        if ( [n isEqualToString:@"chocolate"] )
+                        {
+                            cat = 18;
+                        }
+                        if ( [n isEqualToString:@"coffee"] )
+                        {
+                            cat = 18;
+                        }
                         if ( [n isEqualToString:@"cooler"] )
+                        {
+                            cat = 13;
+                            //break;
+                        }
+                        if ( [n isEqualToString:@"alcohol"] )
+                        {
+                            cat = 8;
+                            //break;
+                        }
+                        if ( [n isEqualToString:@"creme"] )
                         {
                             cat = 13;
                             //break;
@@ -1805,21 +1860,32 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                     
                     sqlite3_stmt *	sql_statement = nil;
                     // does not exist, add new
-                    const char * sql_hard = "insert into harddrinks (name, ingredients, instructions, shopping, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id, created, modified) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    const char * sql_soft = "insert into softdrinks (name, ingredients, instructions, shopping, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id, created, modified) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const char * sql_hard = "insert into hard_drinks (name, ingredients, instructions, shopping, rating, comments, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id, created, modified) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const char * sql_soft = "insert into soft_drinks (name, ingredients, instructions, shopping, rating, comments, shopping_ids, shopcount, enabled, category_id, glass_id, unlocked, user_id, created, modified) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     if (sqlite3_prepare_v2( sqlDatabaseRef, alcoholic ? sql_hard : sql_soft, -1, &sql_statement, NULL ) != SQLITE_OK)
                     {
                         NSLog( @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg( sqlDatabaseRef ) );
                         return NO;
                     }
                     int index = 1;
-                    NSError * error;
                     
                     sqlite3_bind_text(sql_statement, index++, [mydata.name UTF8String],  -1, SQLITE_TRANSIENT);
                     sqlite3_bind_text(sql_statement, index++, [ingredients UTF8String],  -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text(sql_statement, index++, [mydata.instr UTF8String],  -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text(sql_statement, index++, [itemString UTF8String],  -1, SQLITE_TRANSIENT);
+                    sqlite3_bind_text(sql_statement, index++, [mydata.instr UTF8String], -1, SQLITE_TRANSIENT);
+                    sqlite3_bind_text(sql_statement, index++, [itemString UTF8String],   -1, SQLITE_TRANSIENT);
                     
+                    sqlite3_bind_int(sql_statement, index++, 0);
+                    sqlite3_bind_text(sql_statement, index++, "", -1, SQLITE_TRANSIENT);
+
+                    int64_t data[itemArray.count];
+                    int k = 0;
+                    for (NSNumber *i in itemArray)
+                    {
+                        data[k++] = [i longLongValue];
+                    }
+                    sqlite3_bind_blob(sql_statement, index++, (void *)data, (int)(sizeof(int64_t)*itemArray.count), SQLITE_STATIC);
+                    /*
+                    NSError * error;
                     NSData * data = [NSKeyedArchiver archivedDataWithRootObject:itemArray requiringSecureCoding:NO error:&error];
                     if (NULL == data)
                     {
@@ -1828,6 +1894,8 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
                         continue;
                     }
                     sqlite3_bind_blob(sql_statement, index++, [data bytes], (int)[data length], SQLITE_STATIC);
+                    */
+                    
                     sqlite3_bind_int( sql_statement, index++, (int)[itemArray count] );
                     
                     sqlite3_bind_int(sql_statement, index++, enabled);
@@ -1986,8 +2054,8 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
         {
             sqlite3_int64   rec_id = sqlite3_column_int64( statement, 0 );
             NSString *      filter = [NSString stringWithFormat:@"glass_id=%lld", rec_id];
-            sqlite3_int64   count = [self getItemCount:@"harddrinks" filter:filter];
-            count += [self getItemCount:@"softdrinks" filter:filter];
+            sqlite3_int64   count = [self getItemCount:@"hard_drinks" filter:filter];
+            count += [self getItemCount:@"soft_drinks" filter:filter];
             
             const unsigned char * name = sqlite3_column_text( statement, 1 );
             NSLog( @"Glass %lld (%@)   count %lld", rec_id, [NSString stringWithUTF8String:(const char *)name], count );
@@ -2033,8 +2101,8 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
         {
             sqlite3_int64   rec_id = sqlite3_column_int64( statement, 0 );
             NSString *      filter = [NSString stringWithFormat:@"category_id=%lld", rec_id];
-            sqlite3_int64   count = [self getItemCount:@"harddrinks" filter:filter];
-            count += [self getItemCount:@"softdrinks" filter:filter];
+            sqlite3_int64   count = [self getItemCount:@"hard_drinks" filter:filter];
+            count += [self getItemCount:@"soft_drinks" filter:filter];
             
             const unsigned char * name = sqlite3_column_text( statement, 1 );
             NSLog( @"Category %lld (%@)   count %lld", rec_id, [NSString stringWithUTF8String:(const char *)name], count );
@@ -2077,8 +2145,8 @@ BOOL isInArray( NSArray * array, sqlite3_int64 recid )
 /*
  EMPTY DATABASE STRUCTURE:
  
- CREATE TABLE harddrinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, instructions text, rating integer, comments text, user_id integer, shopping text, category_id integer, shopcount integer, glass_id integer, shopping_ids blob, enabled boolean, unlocked boolean, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );
- CREATE TABLE softdrinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, instructions text, rating integer, comments text, user_id integer, shopping text, category_id integer, shopcount integer, glass_id integer, shopping_ids blob, enabled boolean, unlocked boolean, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );
+ CREATE TABLE hard_drinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, instructions text, rating integer, comments text, user_id integer, shopping text, category_id integer, shopcount integer, glass_id integer, shopping_ids blob, enabled boolean, unlocked boolean, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );
+ CREATE TABLE soft_drinks( record_id integer PRIMARY KEY NOT NULL, name text, ingredients text, instructions text, rating integer, comments text, user_id integer, shopping text, category_id integer, shopcount integer, glass_id integer, shopping_ids blob, enabled boolean, unlocked boolean, FOREIGN KEY(glass_id) REFERENCES glasses(grecord_id), FOREIGN KEY(category_id) REFERENCES categories(crecord_id) );
  CREATE TABLE glasses( grecord_id integer PRIMARY KEY NOT NULL, glass text, count integer );
  CREATE TABLE categories( crecord_id integer PRIMARY KEY NOT NULL, category text, count integer );
  CREATE TABLE ingredients( record_id integer PRIMARY KEY NOT NULL, item text, used integer, options integer, enabled boolean, enabled_default boolean, category_id integer );

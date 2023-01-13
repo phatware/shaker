@@ -1,0 +1,12 @@
+Hello ${NAME},
+
+Thank you for using Shaker. Please Enter the PIN below to activate your device.
+
+${PAYLOAD}
+
+If you have any questions about this email, please contact us at shaker@phatware.com
+
+Best Regards,
+
+Shaker Team
+Shaker
